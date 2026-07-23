@@ -8,7 +8,9 @@ export function renderResultsTable(rows: ResultRow[]): HTMLElement {
   let bestIdx = 0;
   rows.forEach((r, i) => { if (r.solution.errorRel < rows[bestIdx].solution.errorRel) bestIdx = i; });
   const body = rows.map((r, i) => {
-    const corr = r.correction ? formatInterval(r.correction.humanInterval, r.correction.direction) : "—";
+    const corr = r.correction
+      ? formatInterval(r.correction.humanInterval, r.correction.direction, r.correction.beyondConstantPrecision)
+      : "—";
     const bench = r.benchmark ? `<span class="bench">${r.benchmark}</span>` : "";
     return `<tr data-best="${i === bestIdx}">
       <td class="num">${r.solution.wheels}</td>

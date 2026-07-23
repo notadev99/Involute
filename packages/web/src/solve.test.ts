@@ -38,6 +38,20 @@ describe("solve adapter", () => {
     }
   });
 
+  it("solves the default first-load request inside the interaction budget", () => {
+    // The exact request inputPanel emits on mount. The budget is a regression
+    // canary: window pruning holds this around 0.6 s; anything near the old
+    // ~9.5 s synchronous solve must fail loudly.
+    const t0 = performance.now();
+    solve({
+      kind: "approx", presetId: "synodic-month",
+      periodDays: "29.530589", precisionDigits: 6, uncertainty: 1e-6,
+      driverPeriodDays: Rational.from(1), displayMultiplicity: 2,
+      constraints: DEFAULT_CONSTRAINTS,
+    });
+    expect(performance.now() - t0).toBeLessThan(2500);
+  });
+
   it("exact mode: motion works 12:1 returns exact rows, no correction", () => {
     const rows = solve({ kind: "exact", ratio: Rational.from(12), constraints: { ...DEFAULT_CONSTRAINTS, maxWheels: 2 } });
     expect(rows.length).toBeGreaterThan(0);

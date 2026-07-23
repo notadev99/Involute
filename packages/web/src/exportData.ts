@@ -10,7 +10,8 @@ function view(r: ResultRow) {
     totalTeeth: r.solution.totalTeeth,
     achievedPeriodDays: r.achievedPeriodDays,
     correction: r.correction ? r.correction.humanInterval : null,
-    direction: r.correction ? r.correction.direction : null,
+    // a direction below the constant's precision is not a supported claim
+    direction: r.correction && !r.correction.beyondConstantPrecision ? r.correction.direction : null,
     benchmark: r.benchmark,
   };
 }
