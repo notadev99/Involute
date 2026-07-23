@@ -26,5 +26,11 @@ export function schematicSvg(train: GearTrain): string {
   // CW/CCW tag would be an unverifiable claim.
   const dir = outputParity(train) === 1 ? "same sense as driver" : "opposite sense to driver";
   const dirTag = `<text class="dir-tag" x="${width - PAD}" y="${cy - R - 8}" text-anchor="end">output: ${dir}</text>`;
-  return `<svg class="schematic" viewBox="0 0 ${width} ${height}" role="img" aria-label="gear train schematic">${baseline}${nodes}${dirTag}</svg>`;
+  // Describe the train for assistive tech — role="img" makes the child <text>
+  // presentational, so everything a sighted user reads must be in the label.
+  const stageWords = train.stages
+    .map((s, i) => `stage ${i + 1} ${s.isIdler ? `idler ${s.drivenTeeth}` : `${s.driverTeeth}:${s.drivenTeeth}`}`)
+    .join(", ");
+  const svgLabel = `Gear train schematic: ${stageWords}; output turns ${dir}`;
+  return `<svg class="schematic" viewBox="0 0 ${width} ${height}" role="img" aria-label="${svgLabel}">${baseline}${nodes}${dirTag}</svg>`;
 }

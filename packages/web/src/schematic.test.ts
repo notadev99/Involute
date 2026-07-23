@@ -16,6 +16,8 @@ describe("schematic", () => {
     // absolute CW/CCW (no driver direction exists in the model)
     expect(svg).toContain("output: same sense as driver");
     expect(svg).not.toMatch(/\bCC?W\b/);
+    // assistive-tech label carries the stages and the rotation sense
+    expect(svg).toContain('aria-label="Gear train schematic: stage 1 8:59, stage 2 7:63; output turns same sense as driver"');
   });
   it("tags a single mesh as opposite sense to the driver", () => {
     const svg = schematicSvg({ stages: [{ driverTeeth: 6, drivenTeeth: 45 }] });

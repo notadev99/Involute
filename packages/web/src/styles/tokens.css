@@ -41,16 +41,16 @@
   --panel: #efeadd;
   --ink: #1f1d18;
   --ink-soft: #5b574c;
-  --ink-faint: #8c8779;
+  --ink-faint: #6e695c;
   --hairline: rgba(31, 29, 24, 0.16);
   --hairline-strong: rgba(31, 29, 24, 0.32);
   --grid-line: rgba(31, 29, 24, 0.045);
   --plate-edge: rgba(31, 29, 24, 0.22);
 
   /* One accent: warm brass. Best-row marker and output-direction tag only. */
-  --accent: #9a6a1c;
-  --accent-soft: rgba(154, 106, 28, 0.12);
-  --accent-line: rgba(154, 106, 28, 0.55);
+  --accent: #7d5516;
+  --accent-soft: rgba(125, 85, 22, 0.12);
+  --accent-line: rgba(125, 85, 22, 0.55);
 
   --focus: #305a7a;
 }
@@ -62,7 +62,7 @@
     --panel: #171c24;
     --ink: #dce1e8;
     --ink-soft: #98a2ad;
-    --ink-faint: #6a7480;
+    --ink-faint: #7d8794;
     --hairline: rgba(220, 225, 232, 0.14);
     --hairline-strong: rgba(220, 225, 232, 0.28);
     --grid-line: rgba(220, 225, 232, 0.038);

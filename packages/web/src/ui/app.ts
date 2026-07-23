@@ -25,6 +25,10 @@ export function mountApp(root: HTMLElement): void {
   const resultsSlot = root.querySelector(".results-slot")!;
   const schematicSlot = root.querySelector(".schematic-slot")!;
   const status = root.querySelector<HTMLElement>(".solve-status")!;
+  resultsSlot.setAttribute("aria-live", "polite");
+  schematicSlot.setAttribute("tabindex", "0");
+  schematicSlot.setAttribute("role", "region");
+  schematicSlot.setAttribute("aria-label", "Gear train schematic");
   const runSolve = createSolver();
   const rerender = (req: SolveRequest, state: PanelState) => {
     // the fragment IS the permalink: update it in place, no history spam

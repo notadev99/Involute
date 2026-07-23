@@ -12,8 +12,9 @@ export function renderResultsTable(rows: ResultRow[]): HTMLElement {
       ? formatInterval(r.correction.humanInterval, r.correction.direction, r.correction.beyondConstantPrecision)
       : "—";
     const bench = r.benchmark ? `<span class="bench">${r.benchmark}</span>` : "";
+    const bestMark = i === bestIdx ? `<span class="visually-hidden">best — </span>` : "";
     return `<tr data-best="${i === bestIdx}">
-      <td class="num">${r.solution.wheels}</td>
+      <td class="num">${bestMark}${r.solution.wheels}</td>
       <td class="teeth">${formatTeeth(r.solution.train)}</td>
       <td class="num err">${formatError(r.solution.errorRel)}</td>
       <td class="num">${r.solution.totalTeeth}</td>
@@ -21,8 +22,9 @@ export function renderResultsTable(rows: ResultRow[]): HTMLElement {
       <td class="bench-cell">${bench}</td>
     </tr>`;
   }).join("");
-  wrap.innerHTML = `<div class="table-scroll"><table>
-    <thead><tr><th>Wheels</th><th>Teeth (driver:driven)</th><th>Error</th><th>Total teeth</th><th>Correction</th><th>Benchmark</th></tr></thead>
+  wrap.innerHTML = `<div class="table-scroll" tabindex="0" role="region" aria-label="Candidate gear trains"><table>
+    <caption class="visually-hidden">Pareto frontier of candidate gear trains</caption>
+    <thead><tr><th scope="col">Wheels</th><th scope="col">Teeth (driver:driven)</th><th scope="col">Error</th><th scope="col">Total teeth</th><th scope="col">Correction</th><th scope="col">Benchmark</th></tr></thead>
     <tbody>${body}</tbody></table></div>`;
   return wrap;
 }
