@@ -1,9 +1,20 @@
 {
   "name": "@involute/engine",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "Exact gear-train solver for watchmaking: Diophantine solve for exact ratios, Pareto frontier of best rational approximations for astronomical periods. BigInt rational arithmetic, zero dependencies.",
+  "keywords": ["horology", "watchmaking", "gear-train", "gears", "moonphase", "complications", "rational-approximation", "diophantine"],
+  "license": "MIT",
+  "author": "Thomas Brenas",
+  "repository": { "type": "git", "url": "git+https://github.com/notadev99/Involute.git", "directory": "packages/engine" },
+  "homepage": "https://notadev99.github.io/Involute/",
+  "bugs": "https://github.com/notadev99/Involute/issues",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
+  },
+  "files": ["dist", "README.md", "LICENSE"],
   "scripts": { "test": "vitest run", "build": "tsc -p tsconfig.json" },
   "engines": { "node": ">=24" },
   "devDependencies": { "typescript": "^5.6.0", "vitest": "^2.1.0" }
