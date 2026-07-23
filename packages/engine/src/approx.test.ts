@@ -160,3 +160,20 @@ describe("hunting-tooth ranking bonus", () => {
     expect(coprimeStages(on.train)).toBeGreaterThanOrEqual(coprimeStages(off.train));
   });
 });
+
+describe("out-of-reach targets", () => {
+  // A target outside [gearMin^k/gearMax^k, gearMax^k/gearMin^k] can meet no
+  // train at that wheel count: bestTrainForK returns null up front and the
+  // frontier comes back empty — the UI's "no train fits" state, not a
+  // boundary train with a nonsense error.
+  it("returns an empty frontier for a hopeless ratio, quickly", () => {
+    const t0 = performance.now();
+    expect(paretoFrontier(Rational.from(1000000000n), DEFAULT_CONSTRAINTS)).toEqual([]);
+    expect(paretoFrontier(Rational.from(1n, 100000000n), DEFAULT_CONSTRAINTS)).toEqual([]);
+    expect(performance.now() - t0).toBeLessThan(100);
+  });
+  it("omits wheel counts whose band cannot reach the target", () => {
+    // moon multiplier 59.06 exceeds the k=1 band (max 120/6 = 20)
+    expect(bestTrainForK(Rational.from(59061178n, 1000000n), 1, DEFAULT_CONSTRAINTS)).toBeNull();
+  });
+});

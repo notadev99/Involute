@@ -43,6 +43,15 @@ export function bestTrainForK(target: Rational, k: number, c: Constraints): Solu
   const tNum = target.toNumber();
   const Pmin = bmin ** BigInt(k); // smallest achievable driven product
   const Pmax = bmax ** BigInt(k); // largest achievable driven product
+
+  // A k-wheel train's ratio lies in [Pmin/Pmax, Pmax/Pmin] — driver and driven
+  // products each live in [Pmin, Pmax]. A target outside that band (with a
+  // whisker of float slack) can meet no train at this wheel count, so return
+  // null up front instead of walking millions of dead subtrees: no in-band
+  // candidate ever seeds `best`, so the window pruning cannot engage out here.
+  const bandLo = Number(Pmin) / Number(Pmax), bandHi = Number(Pmax) / Number(Pmin);
+  if (tNum < bandLo * (1 - 1e-9) || tNum > bandHi * (1 + 1e-9)) return null;
+
   let best: Solution | null = null;
 
   const gatePasses = (train: GearTrain) =>
@@ -142,13 +151,21 @@ export function bestTrainForK(target: Rational, k: number, c: Constraints): Solu
     }
     const base = tNum * Number(product);
     for (let f = floor; f <= max; f++) {
+      const qLo = base * f ** slots;
+      const qHi = base * f * max ** (slots - 1);
+      // scan() only ever yields for a Q whose floor(target*Q) lands inside
+      // [Pmin-1, Pmax] — outside that, the walk exits before producing a
+      // candidate — so subtrees whose whole reachable interval misses the
+      // window are dead regardless of the current best. A best tightens the
+      // window further to the error it must beat.
+      let lo = PminN - 1, hi = PmaxN + 1;
       if (best) {
         const eps = best.errorRel * (1 + 1e-9) + Number.EPSILON;
-        const qLo = base * f ** slots;
-        const qHi = base * f * max ** (slots - 1);
-        if (qLo > (eps >= 1 ? Infinity : PmaxN / (1 - eps))) break;
-        if (qHi < PminN / (1 + eps)) continue;
+        lo = Math.max(lo, PminN / (1 + eps));
+        if (eps < 1) hi = Math.min(hi, PmaxN / (1 - eps));
       }
+      if (qLo > hi) break;    // ascending f: every later subtree overshoots too
+      if (qHi < lo) continue; // undershoots even fully maxed; larger f may not
       enumQ(slots - 1, f, [...factors, f], product * BigInt(f));
     }
   }

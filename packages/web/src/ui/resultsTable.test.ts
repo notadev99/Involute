@@ -18,3 +18,12 @@ describe("results table", () => {
     expect(el.querySelectorAll("tbody tr").length).toBe(2);
   });
 });
+
+describe("empty state", () => {
+  it("explains when no train fits the constraints", async () => {
+    const { renderResultsTable } = await import("./resultsTable.js");
+    const el = renderResultsTable([]);
+    expect(el.querySelector(".empty")).not.toBeNull();
+    expect(el.textContent).toContain("No train fits these constraints");
+  });
+});
