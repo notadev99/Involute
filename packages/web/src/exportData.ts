@@ -1,5 +1,6 @@
 import type { ResultRow } from "./solve.js";
 import { formatTeeth } from "./format.js";
+import { summaryText, type SolveSummary } from "./summary.js";
 
 function view(r: ResultRow) {
   return {
@@ -16,11 +17,14 @@ function view(r: ResultRow) {
   };
 }
 
-export function toJson(rows: ResultRow[]): string {
+export function toJson(rows: ResultRow[], summary?: SolveSummary): string {
+  // With a summary the export carries the full request context, so the file
+  // alone reconstructs what was solved.
+  if (summary) return JSON.stringify({ target: summary, rows: rows.map(view) }, null, 2);
   return JSON.stringify(rows.map(view), null, 2);
 }
 
-export function toCsv(rows: ResultRow[]): string {
+export function toCsv(rows: ResultRow[], summary?: SolveSummary): string {
   const cols = ["wheels", "teeth", "ratio", "errorRel", "totalTeeth", "achievedPeriodDays", "correction", "direction", "benchmark"] as const;
   const esc = (v: unknown) => {
     const s = v === null || v === undefined ? "" : String(v);
@@ -28,5 +32,6 @@ export function toCsv(rows: ResultRow[]): string {
   };
   const head = cols.join(",");
   const body = rows.map((r) => { const v = view(r) as Record<string, unknown>; return cols.map((c) => esc(v[c])).join(","); });
-  return [head, ...body].join("\n");
+  const lines = summary ? [`# ${summaryText(summary)}`, head, ...body] : [head, ...body];
+  return lines.join("\n");
 }

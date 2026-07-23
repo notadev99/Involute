@@ -4,6 +4,8 @@ import { schematicSvg } from "../schematic.js";
 import { toJson, toCsv } from "../exportData.js";
 import { createSolver, type SolveRequest } from "../solveClient.js";
 import { encodeState, decodeState, type PanelState } from "../urlState.js";
+import { buildSummary, summaryText, type SolveSummary } from "../summary.js";
+import { APPROX_PRESETS } from "@involute/engine";
 import type { ResultRow } from "../solve.js";
 
 function debounce<A extends unknown[]>(fn: (...args: A) => void, ms: number): (...args: A) => void {
@@ -17,11 +19,13 @@ function debounce<A extends unknown[]>(fn: (...args: A) => void, ms: number): (.
 export function mountApp(root: HTMLElement): void {
   root.innerHTML = `<header class="masthead"><h1>Involute</h1><p class="tagline">Gear trains for watchmakers, computed exactly</p></header>
     <section class="panel-slot"></section>
+    <p class="solve-summary"></p>
     <p class="solve-status" role="status" hidden>Computing…</p>
     <section class="schematic-slot"></section>
     <section class="results-slot"></section>
     <section class="export-slot"><button data-export="json">Copy JSON</button><button data-export="csv">Download CSV</button></section>`;
   let rows: ResultRow[] = [];
+  let summary: SolveSummary | undefined;
   const resultsSlot = root.querySelector(".results-slot")!;
   const schematicSlot = root.querySelector(".schematic-slot")!;
   const status = root.querySelector<HTMLElement>(".solve-status")!;
@@ -30,6 +34,7 @@ export function mountApp(root: HTMLElement): void {
   schematicSlot.setAttribute("role", "region");
   schematicSlot.setAttribute("aria-label", "Gear train schematic");
   const runSolve = createSolver();
+  const summarySlot = root.querySelector<HTMLElement>(".solve-summary")!;
   const rerender = (req: SolveRequest, state: PanelState) => {
     // the fragment IS the permalink: update it in place, no history spam
     history.replaceState(null, "", "#" + encodeState(state));
@@ -37,7 +42,13 @@ export function mountApp(root: HTMLElement): void {
     runSolve(req, (r) => {
       status.hidden = true;
       rows = r;
-      resultsSlot.replaceChildren(renderResultsTable(rows));
+      summary = buildSummary(req, state);
+      summarySlot.textContent = summaryText(summary);
+      const preset = req.kind === "approx" && req.presetId
+        ? APPROX_PRESETS.find((p) => p.id === req.presetId) : undefined;
+      const approxMeta = req.kind === "approx"
+        ? { digits: req.precisionDigits, unit: preset ? preset.unit : "day" } : null;
+      resultsSlot.replaceChildren(renderResultsTable(rows, approxMeta));
       const best = rows.reduce((b, r) => (r.solution.errorRel < b.solution.errorRel ? r : b), rows[0]);
       schematicSlot.innerHTML = best ? schematicSvg(best.solution.train) : "";
     });
@@ -65,9 +76,9 @@ export function mountApp(root: HTMLElement): void {
   );
   panel.classList.add("input-panel");
   root.querySelector(".panel-slot")!.replaceChildren(panel);
-  root.querySelector('[data-export="json"]')!.addEventListener("click", () => navigator.clipboard?.writeText(toJson(rows)));
+  root.querySelector('[data-export="json"]')!.addEventListener("click", () => navigator.clipboard?.writeText(toJson(rows, summary)));
   root.querySelector('[data-export="csv"]')!.addEventListener("click", () => {
-    const blob = new Blob([toCsv(rows)], { type: "text/csv" });
+    const blob = new Blob([toCsv(rows, summary)], { type: "text/csv" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "involute-frontier.csv"; a.click();
   });
   // initial solve with the panel's default request

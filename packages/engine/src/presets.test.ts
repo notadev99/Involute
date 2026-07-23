@@ -19,3 +19,19 @@ describe("presets", () => {
     expect(mw.ratio.equals(Rational.from(12))).toBe(true);
   });
 });
+
+describe("representative-preset honesty markers", () => {
+  const representative = ["jump-hour", "retrograde-drive", "wandering-hours", "power-reserve"];
+  it.each(representative)("%s is marked deferred and representative", (id) => {
+    const p = EXACT_PRESETS.find((x) => x.id === id)!;
+    expect(p.mechanismDeferred).toBeTruthy();
+    expect(p.note).toMatch(/representative|placeholder|digital/);
+  });
+  it("no sourced preset borrows the representative markers", () => {
+    for (const p of EXACT_PRESETS) {
+      if (representative.includes(p.id)) continue;
+      expect(p.mechanismDeferred).toBeUndefined();
+      expect(p.note ?? "").not.toMatch(/representative|placeholder/);
+    }
+  });
+});

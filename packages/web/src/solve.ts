@@ -8,7 +8,7 @@ export interface ApproxRequest {
   periodDays: string; precisionDigits: number; uncertainty: number;
   driverPeriodDays: Rational; displayMultiplicity: number; constraints: Constraints;
 }
-export interface ExactRequest { kind: "exact"; ratio: Rational; constraints: Constraints; }
+export interface ExactRequest { kind: "exact"; presetId?: string; ratio: Rational; constraints: Constraints; }
 export interface ResultRow {
   solution: Solution;
   achievedPeriodDays: number | null;

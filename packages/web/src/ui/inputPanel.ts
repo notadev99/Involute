@@ -31,6 +31,7 @@ export function renderInputPanel(
         <option value="custom-ratio">Custom ratio (exact)…</option>
         <option value="going-train">Going train (beat rate)…</option>
       </select>
+      <p class="target-note" hidden></p>
     </div>
     <div class="field custom-target" hidden>
       <label for="custom-period">Period (days)</label>
@@ -178,11 +179,38 @@ export function renderInputPanel(
     return Number(raw);
   }
 
+  // The provenance line under the target select: an approx preset shows its
+  // source and driver convention; an exact preset shows its note, plus a
+  // deferred-mechanism tag or a representative-value disclaimer where honesty
+  // requires one. The app's README promises these caveats are marked.
+  const targetNote = root.querySelector<HTMLElement>(".target-note")!;
+  function renderTargetNote(selected: string): void {
+    let text = "";
+    if (selected.startsWith("approx:")) {
+      const p = APPROX_PRESETS.find((x) => `approx:${x.id}` === selected);
+      if (p) text = `Source: ${p.source} — ${p.driverNote}`;
+    } else if (selected.startsWith("exact:")) {
+      const p = EXACT_PRESETS.find((x) => `exact:${x.id}` === selected);
+      if (p) {
+        const bits: string[] = [];
+        if (p.note) bits.push(p.note);
+        if (p.mechanismDeferred) bits.push(`gear side only — ${p.mechanismDeferred}`);
+        if (p.note && /representative|placeholder/.test(p.note)) {
+          bits.push("representative value, not a sourced specification");
+        }
+        text = bits.join("; ");
+      }
+    }
+    targetNote.textContent = text;
+    targetNote.hidden = text === "";
+  }
+
   function emit(): void {
     const selected = presetSelect.value;
     customField.hidden = selected !== "custom";
     ratioField.hidden = selected !== "custom-ratio";
     goingField.hidden = selected !== "going-train";
+    renderTargetNote(selected);
     if (selected !== lastTarget) {
       lastTarget = selected;
       if (selected.startsWith("approx:")) {
@@ -201,7 +229,7 @@ export function renderInputPanel(
         const id = selected.slice("exact:".length);
         const preset = EXACT_PRESETS.find((p) => p.id === id);
         if (!preset) return;
-        const req: ExactRequest = { kind: "exact", ratio: preset.ratio, constraints };
+        const req: ExactRequest = { kind: "exact", presetId: preset.id, ratio: preset.ratio, constraints };
         onChange(req, state);
         return;
       }

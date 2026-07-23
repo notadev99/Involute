@@ -10,6 +10,12 @@ describe("app", () => {
     expect(root.querySelector("svg.schematic")).not.toBeNull();
     // solving writes the shareable state into the fragment
     expect(location.hash).toContain("t=approx%3Asynodic-month");
+    // the what-was-solved line and provenance are on screen
+    expect(root.querySelector(".solve-summary")!.textContent).toContain("source: Meeus");
+    expect(root.querySelector(".target-note")!.textContent).toContain("Meeus");
+    // achieved period rendered per row in approx mode
+    expect(root.querySelector("thead")!.textContent).toContain("Achieved period");
+    expect(root.querySelector("td.period")!.textContent).toMatch(/^\d+\.\d{6}$/);
     history.replaceState(null, "", "#");
   });
 
