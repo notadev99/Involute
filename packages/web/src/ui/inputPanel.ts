@@ -74,6 +74,11 @@ export function renderInputPanel(
       <span class="range-sep">–</span>
       <input id="gear-max" type="number" min="6" value="${DEFAULT_CONSTRAINTS.gearMax}" aria-label="Gear range maximum" />
     </div>
+    <div class="field">
+      <label for="pinion-min">Pinion leaf minimum</label>
+      <input id="pinion-min" type="number" min="6" placeholder="off" />
+      <span class="hint">floor for each stage's smaller gear</span>
+    </div>
   `;
 
   const presetSelect = root.querySelector<HTMLSelectElement>("#preset-select")!;
@@ -91,6 +96,7 @@ export function renderInputPanel(
   const maxWheels = root.querySelector<HTMLInputElement>("#max-wheels")!;
   const gearMin = root.querySelector<HTMLInputElement>("#gear-min")!;
   const gearMax = root.querySelector<HTMLInputElement>("#gear-max")!;
+  const pinionMin = root.querySelector<HTMLInputElement>("#pinion-min")!;
 
   presetSelect.value = `approx:${DEFAULT_PRESET_ID}`;
 
@@ -114,6 +120,7 @@ export function renderInputPanel(
     if (initial.wheels) maxWheels.value = initial.wheels;
     if (initial.gearMin) gearMin.value = initial.gearMin;
     if (initial.gearMax) gearMax.value = initial.gearMax;
+    if (initial.pinionMin) pinionMin.value = initial.pinionMin;
     if (initial.num) ratioNum.value = initial.num;
     if (initial.den) ratioDen.value = initial.den;
     if (initial.bph) beatRate.value = initial.bph;
@@ -121,16 +128,18 @@ export function renderInputPanel(
   }
 
   function buildConstraints(): Constraints {
+    const pm = Number(pinionMin.value);
     const c = {
       ...DEFAULT_CONSTRAINTS,
       gearMin: Number(gearMin.value) || DEFAULT_CONSTRAINTS.gearMin,
       gearMax: Number(gearMax.value) || DEFAULT_CONSTRAINTS.gearMax,
       maxWheels: Number(maxWheels.value) || DEFAULT_CONSTRAINTS.maxWheels,
+      ...(pm ? { pinionMin: pm } : {}),
     };
     try {
       validateConstraints(c);
     } catch {
-      throw new Error("Check the gear range: at least 6 teeth, maximum no smaller than minimum, at least 1 wheel.");
+      throw new Error("Check the gear range: at least 6 teeth, maximum no smaller than minimum, pinion floor inside the range, at least 1 wheel.");
     }
     return c;
   }
@@ -156,6 +165,7 @@ export function renderInputPanel(
       wheels: maxWheels.value,
       gearMin: gearMin.value,
       gearMax: gearMax.value,
+      ...(pinionMin.value ? { pinionMin: pinionMin.value } : {}),
     };
     if (selected === "custom") {
       state.period = customPeriod.value.trim();

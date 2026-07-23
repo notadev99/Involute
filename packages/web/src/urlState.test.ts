@@ -47,3 +47,12 @@ describe("url state", () => {
     expect(decodeState("#")).toEqual({});
   });
 });
+
+describe("pinion minimum in links", () => {
+  it("round-trips when set and drops garbage", () => {
+    const s = { target: "approx:synodic-month", driver: "1", mult: "2",
+      wheels: "4", gearMin: "6", gearMax: "120", pinionMin: "8" };
+    expect(decodeState(encodeState(s))).toEqual(s);
+    expect(decodeState("pm=abc")).toEqual({});
+  });
+});

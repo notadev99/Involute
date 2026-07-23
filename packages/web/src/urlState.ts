@@ -16,6 +16,7 @@ export interface PanelState {
   wheels: string; // max wheels
   gearMin: string;
   gearMax: string;
+  pinionMin?: string; // optional pinion leaf floor
 }
 
 const KEYS: [keyof PanelState, string, RegExp][] = [
@@ -31,6 +32,7 @@ const KEYS: [keyof PanelState, string, RegExp][] = [
   ["wheels", "w", /^\d{1,2}$/],
   ["gearMin", "g0", /^\d{1,4}$/],
   ["gearMax", "g1", /^\d{1,4}$/],
+  ["pinionMin", "pm", /^\d{1,3}$/],
 ];
 
 export function encodeState(s: PanelState): string {
