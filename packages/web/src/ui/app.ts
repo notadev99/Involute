@@ -3,6 +3,7 @@ import { renderResultsTable } from "./resultsTable.js";
 import { schematicSvg } from "../schematic.js";
 import { toJson, toCsv } from "../exportData.js";
 import { createSolver, type SolveRequest } from "../solveClient.js";
+import { encodeState, decodeState, type PanelState } from "../urlState.js";
 import type { ResultRow } from "../solve.js";
 
 function debounce<A extends unknown[]>(fn: (...args: A) => void, ms: number): (...args: A) => void {
@@ -25,7 +26,9 @@ export function mountApp(root: HTMLElement): void {
   const schematicSlot = root.querySelector(".schematic-slot")!;
   const status = root.querySelector<HTMLElement>(".solve-status")!;
   const runSolve = createSolver();
-  const rerender = (req: SolveRequest) => {
+  const rerender = (req: SolveRequest, state: PanelState) => {
+    // the fragment IS the permalink: update it in place, no history spam
+    history.replaceState(null, "", "#" + encodeState(state));
     status.hidden = false;
     runSolve(req, (r) => {
       status.hidden = true;
@@ -39,7 +42,7 @@ export function mountApp(root: HTMLElement): void {
   // from queueing heavy solves. The synchronous fallback stays undebounced —
   // it renders in the same tick, which the tests (and no-Worker envs) rely on.
   const onRequest = typeof Worker === "undefined" ? rerender : debounce(rerender, 150);
-  const panel = renderInputPanel(onRequest);
+  const panel = renderInputPanel(onRequest, decodeState(location.hash));
   panel.classList.add("input-panel");
   root.querySelector(".panel-slot")!.replaceChildren(panel);
   root.querySelector('[data-export="json"]')!.addEventListener("click", () => navigator.clipboard?.writeText(toJson(rows)));

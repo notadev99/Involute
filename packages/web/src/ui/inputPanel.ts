@@ -3,13 +3,17 @@ import {
   type Constraints,
 } from "@involute/engine";
 import type { ApproxRequest, ExactRequest } from "../solve.js";
+import type { PanelState } from "../urlState.js";
 
 const DEFAULT_PRESET_ID = "synodic-month";
 // Fixed precision used only for parsing the driver-period and custom-target
 // text fields into Rationals; unrelated to a preset's own precisionDigits.
 const FIELD_PRECISION_DIGITS = 6;
 
-export function renderInputPanel(onChange: (req: ApproxRequest | ExactRequest) => void): HTMLElement {
+export function renderInputPanel(
+  onChange: (req: ApproxRequest | ExactRequest, state: PanelState) => void,
+  initial?: Partial<PanelState>,
+): HTMLElement {
   const root = document.createElement("div");
   root.innerHTML = `
     <div class="field target-field">
@@ -62,6 +66,22 @@ export function renderInputPanel(onChange: (req: ApproxRequest | ExactRequest) =
 
   presetSelect.value = `approx:${DEFAULT_PRESET_ID}`;
 
+  // Restore a shared-link state: apply only values the URL layer already
+  // shape-checked, and only a target that exists in this build's preset list.
+  if (initial) {
+    if (initial.target && [...presetSelect.options].some((o) => o.value === initial.target)) {
+      presetSelect.value = initial.target;
+      customField.hidden = initial.target !== "custom";
+    }
+    if (initial.period) customPeriod.value = initial.period;
+    if (initial.precision) customPrecision.value = initial.precision;
+    if (initial.driver) driverPeriod.value = initial.driver;
+    if (initial.mult) multiplicity.value = initial.mult;
+    if (initial.wheels) maxWheels.value = initial.wheels;
+    if (initial.gearMin) gearMin.value = initial.gearMin;
+    if (initial.gearMax) gearMax.value = initial.gearMax;
+  }
+
   function buildConstraints(): Constraints {
     return {
       ...DEFAULT_CONSTRAINTS,
@@ -71,10 +91,27 @@ export function renderInputPanel(onChange: (req: ApproxRequest | ExactRequest) =
     };
   }
 
+  function fieldState(selected: string): PanelState {
+    const state: PanelState = {
+      target: selected,
+      driver: driverPeriod.value.trim() || "1",
+      mult: multiplicity.value || "1",
+      wheels: maxWheels.value,
+      gearMin: gearMin.value,
+      gearMax: gearMax.value,
+    };
+    if (selected === "custom") {
+      state.period = customPeriod.value.trim();
+      state.precision = customPrecision.value;
+    }
+    return state;
+  }
+
   function emit(): void {
     const selected = presetSelect.value;
     customField.hidden = selected !== "custom";
 
+    const state = fieldState(selected);
     const constraints = buildConstraints();
     const driverPeriodDays = parseDecimal(driverPeriod.value.trim() || "1", FIELD_PRECISION_DIGITS);
     const displayMultiplicity = Number(multiplicity.value) || 1;
@@ -84,7 +121,7 @@ export function renderInputPanel(onChange: (req: ApproxRequest | ExactRequest) =
       const preset = EXACT_PRESETS.find((p) => p.id === id);
       if (!preset) return;
       const req: ExactRequest = { kind: "exact", ratio: preset.ratio, constraints };
-      onChange(req);
+      onChange(req, state);
       return;
     }
 
@@ -95,7 +132,7 @@ export function renderInputPanel(onChange: (req: ApproxRequest | ExactRequest) =
         kind: "approx", periodDays, precisionDigits, uncertainty: 10 ** -precisionDigits,
         driverPeriodDays, displayMultiplicity, constraints,
       };
-      onChange(req);
+      onChange(req, state);
       return;
     }
 
@@ -107,7 +144,7 @@ export function renderInputPanel(onChange: (req: ApproxRequest | ExactRequest) =
       kind: "approx", presetId: preset.id, periodDays: preset.value, precisionDigits: preset.precisionDigits,
       uncertainty: preset.uncertainty, driverPeriodDays, displayMultiplicity, constraints,
     };
-    onChange(req);
+    onChange(req, state);
   }
 
   root.addEventListener("input", emit);
