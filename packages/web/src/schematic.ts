@@ -21,7 +21,10 @@ export function schematicSvg(train: GearTrain): string {
     <text class="tooth-label" x="${g.x}" y="${cy + 4}" text-anchor="middle">${g.teeth}</text>
     ${g.idler ? `<text class="idler-tag" x="${g.x}" y="${cy + R + 14}" text-anchor="middle">idler</text>` : ""}`).join("");
   const baseline = `<line class="plate-line" x1="${PAD}" y1="${cy}" x2="${width - PAD}" y2="${cy}" />`;
-  const dir = outputParity(train) === 1 ? "CW" : "CCW";
-  const dirTag = `<text class="dir-tag" x="${width - PAD}" y="${cy - R - 8}" text-anchor="end">output ${dir}</text>`;
+  // Mesh parity only fixes the output's sense RELATIVE to the driver — no
+  // absolute driver direction exists anywhere in the model, so an absolute
+  // CW/CCW tag would be an unverifiable claim.
+  const dir = outputParity(train) === 1 ? "same sense as driver" : "opposite sense to driver";
+  const dirTag = `<text class="dir-tag" x="${width - PAD}" y="${cy - R - 8}" text-anchor="end">output: ${dir}</text>`;
   return `<svg class="schematic" viewBox="0 0 ${width} ${height}" role="img" aria-label="gear train schematic">${baseline}${nodes}${dirTag}</svg>`;
 }
