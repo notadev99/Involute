@@ -1,0 +1,55 @@
+name: Add a movement or benchmark
+description: Propose a reference-database entry — a real movement's train with a primary source.
+title: "[benchmark] "
+labels: ["reference-database"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Involute never labels a result with a figure it cannot cite. A benchmark
+        entry needs a **primary source**: a patent, a manufacturer service sheet
+        or technical guide, or graded horological literature. Forum posts, blog
+        articles, and marketing pages are not primary sources. Entries without
+        one are stored unsourced and excluded from matching — see CONTRIBUTING.md.
+  - type: input
+    id: movement
+    attributes:
+      label: Movement or mechanism
+      description: Caliber or mechanism this train comes from.
+      placeholder: e.g. ETA 6497-1 going train
+    validations:
+      required: true
+  - type: textarea
+    id: train
+    attributes:
+      label: Train
+      description: "Tooth counts, stage by stage, driver:driven, plus what drives it and what it displays."
+      placeholder: |
+        e.g. 6:45 · 8:63 off a 1 rev/day wheel, double-moon disc (2 lunations/turn)
+    validations:
+      required: true
+  - type: input
+    id: period
+    attributes:
+      label: Target period or ratio
+      description: The value this train approximates or hits, with units.
+      placeholder: e.g. 29.530589 days (synodic month)
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Primary source
+      description: Exact document and where the tooth counts appear in it. This is the field the entry stands or falls on.
+      placeholder: |
+        e.g. ETA 6497-1 Technical Communication (manufacturer document number,
+        page/table with the tooth counts), or patent number and figure.
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Source check
+      options:
+        - label: The source above is a primary document I have seen myself, not a secondhand citation.
+          required: true
