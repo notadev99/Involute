@@ -54,9 +54,11 @@ export function bestTrainForK(target: Rational, k: number, c: Constraints): Solu
 
   let best: Solution | null = null;
 
+  const pinionFloor = c.pinionMin ?? c.gearMin;
   const gatePasses = (train: GearTrain) =>
     train.stages.every((s) => s.drivenTeeth / s.driverTeeth <= c.maxStageRatio
-                           && s.driverTeeth / s.drivenTeeth <= c.maxStageRatio);
+                           && s.driverTeeth / s.drivenTeeth <= c.maxStageRatio
+                           && Math.min(s.driverTeeth, s.drivenTeeth) >= pinionFloor);
 
   // Ranking: smallest error first, compared EXACTLY — |achieved - target| as a
   // Rational, never the float errorRel, which rounds two distinct errors onto

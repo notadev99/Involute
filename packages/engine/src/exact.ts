@@ -33,8 +33,10 @@ export function solveExact(target: Rational, c: Constraints, resultCap = 50): So
       for (const driven of drivenAll) {
         for (const driver of driverAll) {
           const stages: GearStage[] = driver.map((d, i) => ({ driverTeeth: d, drivenTeeth: driven[i] }));
+          const pinionFloor = c.pinionMin ?? c.gearMin;
           if (stages.some((s) => s.drivenTeeth / s.driverTeeth > c.maxStageRatio
-                              || s.driverTeeth / s.drivenTeeth > c.maxStageRatio)) continue;
+                              || s.driverTeeth / s.drivenTeeth > c.maxStageRatio
+                              || Math.min(s.driverTeeth, s.drivenTeeth) < pinionFloor)) continue;
           const train: GearTrain = { stages };
           const key = stages.map((s) => `${s.driverTeeth}/${s.drivenTeeth}`).sort().join(",");
           if (seen.has(key)) continue;

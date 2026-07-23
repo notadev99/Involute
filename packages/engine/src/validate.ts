@@ -29,4 +29,7 @@ export function validateConstraints(c: Constraints): void {
   if (c.gearMin < 6) throw new Error("gearMin must be >= 6");
   if (c.gearMax < c.gearMin) throw new Error("gearMax must be >= gearMin");
   if (c.maxWheels < 1) throw new Error("maxWheels must be >= 1");
+  if (c.pinionMin !== undefined && (c.pinionMin < c.gearMin || c.pinionMin > c.gearMax)) {
+    throw new Error("pinionMin must lie within the gear range");
+  }
 }
