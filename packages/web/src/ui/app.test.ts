@@ -45,6 +45,34 @@ describe("app", () => {
     history.replaceState(null, "", "#");
   });
 
+  it("solves a custom exact ratio", () => {
+    const root = document.createElement("main");
+    mountApp(root);
+    const select = root.querySelector<HTMLSelectElement>("#preset-select")!;
+    select.value = "custom-ratio";
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    const num = root.querySelector<HTMLInputElement>("#ratio-num")!;
+    num.value = "235";
+    root.querySelector<HTMLInputElement>("#ratio-den")!.value = "19";
+    num.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(root.querySelector(".input-error")).toBeNull();
+    expect(root.querySelectorAll("tbody tr").length).toBeGreaterThan(0);
+    history.replaceState(null, "", "#");
+  });
+
+  it("solves a going train from beat rate and escape teeth", () => {
+    const root = document.createElement("main");
+    mountApp(root);
+    const select = root.querySelector<HTMLSelectElement>("#preset-select")!;
+    select.value = "going-train";
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    // defaults: 18000 bph, 15 escape teeth
+    expect(root.querySelector(".input-error")).toBeNull();
+    expect(root.querySelectorAll("tbody tr").length).toBeGreaterThan(0);
+    expect(location.hash).toContain("t=going-train");
+    history.replaceState(null, "", "#");
+  });
+
   it("restores panel state from a shared link and solves it", () => {
     history.replaceState(null, "", "#t=exact%3Amotion-works&w=2&g0=6&g1=80");
     const root = document.createElement("main");

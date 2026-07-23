@@ -1,7 +1,7 @@
 import {
   APPROX_PRESETS, EXACT_PRESETS, DEFAULT_CONSTRAINTS, parseDecimal,
-  validateApproxTarget, validateConstraints,
-  type Constraints, type Rational,
+  validateApproxTarget, validateConstraints, goingTrainTarget, Rational,
+  type Constraints,
 } from "@involute/engine";
 import type { ApproxRequest, ExactRequest } from "../solve.js";
 import type { PanelState } from "../urlState.js";
@@ -27,7 +27,9 @@ export function renderInputPanel(
         <optgroup label="Mechanical (exact)">
           ${EXACT_PRESETS.map((p) => `<option value="exact:${p.id}">${p.name}</option>`).join("")}
         </optgroup>
-        <option value="custom">Custom target…</option>
+        <option value="custom">Custom period (approximate)…</option>
+        <option value="custom-ratio">Custom ratio (exact)…</option>
+        <option value="going-train">Going train (beat rate)…</option>
       </select>
     </div>
     <div class="field custom-target" hidden>
@@ -35,6 +37,22 @@ export function renderInputPanel(
       <input id="custom-period" type="text" value="29.530589" />
       <label for="custom-precision">Precision (digits)</label>
       <input id="custom-precision" type="number" min="1" max="15" value="${FIELD_PRECISION_DIGITS}" />
+    </div>
+    <div class="field custom-ratio-field" hidden>
+      <label for="ratio-num">Target ratio</label>
+      <input id="ratio-num" type="number" min="1" step="1" value="12" />
+      <span class="range-sep">:</span>
+      <input id="ratio-den" type="number" min="1" step="1" value="1" aria-label="Target ratio denominator" />
+    </div>
+    <div class="field going-train-field" hidden>
+      <label for="beat-rate">Beat rate (bph)</label>
+      <input id="beat-rate" list="bph-rates" inputmode="numeric" value="18000" />
+      <datalist id="bph-rates">
+        <option value="18000"></option><option value="21600"></option><option value="25200"></option>
+        <option value="28800"></option><option value="36000"></option>
+      </datalist>
+      <label for="escape-teeth">Escape-wheel teeth</label>
+      <input id="escape-teeth" type="number" min="1" step="1" value="15" />
     </div>
     <div class="field">
       <label for="driver-period">Driver period (days)</label>
@@ -61,6 +79,12 @@ export function renderInputPanel(
   const customField = root.querySelector<HTMLElement>(".custom-target")!;
   const customPeriod = root.querySelector<HTMLInputElement>("#custom-period")!;
   const customPrecision = root.querySelector<HTMLInputElement>("#custom-precision")!;
+  const ratioField = root.querySelector<HTMLElement>(".custom-ratio-field")!;
+  const ratioNum = root.querySelector<HTMLInputElement>("#ratio-num")!;
+  const ratioDen = root.querySelector<HTMLInputElement>("#ratio-den")!;
+  const goingField = root.querySelector<HTMLElement>(".going-train-field")!;
+  const beatRate = root.querySelector<HTMLInputElement>("#beat-rate")!;
+  const escapeTeeth = root.querySelector<HTMLInputElement>("#escape-teeth")!;
   const driverPeriod = root.querySelector<HTMLInputElement>("#driver-period")!;
   const multiplicity = root.querySelector<HTMLInputElement>("#multiplicity")!;
   const maxWheels = root.querySelector<HTMLInputElement>("#max-wheels")!;
@@ -89,6 +113,10 @@ export function renderInputPanel(
     if (initial.wheels) maxWheels.value = initial.wheels;
     if (initial.gearMin) gearMin.value = initial.gearMin;
     if (initial.gearMax) gearMax.value = initial.gearMax;
+    if (initial.num) ratioNum.value = initial.num;
+    if (initial.den) ratioDen.value = initial.den;
+    if (initial.bph) beatRate.value = initial.bph;
+    if (initial.escape) escapeTeeth.value = initial.escape;
   }
 
   function buildConstraints(): Constraints {
@@ -132,12 +160,29 @@ export function renderInputPanel(
       state.period = customPeriod.value.trim();
       state.precision = customPrecision.value;
     }
+    if (selected === "custom-ratio") {
+      state.num = ratioNum.value;
+      state.den = ratioDen.value;
+    }
+    if (selected === "going-train") {
+      state.bph = beatRate.value.trim();
+      state.escape = escapeTeeth.value;
+    }
     return state;
+  }
+
+  function parsePositiveInt(raw: string, label: string): number {
+    if (!/^\d+$/.test(raw) || Number(raw) < 1) {
+      throw new Error(`${label} must be a whole number of 1 or more (got "${raw}").`);
+    }
+    return Number(raw);
   }
 
   function emit(): void {
     const selected = presetSelect.value;
     customField.hidden = selected !== "custom";
+    ratioField.hidden = selected !== "custom-ratio";
+    goingField.hidden = selected !== "going-train";
     if (selected !== lastTarget) {
       lastTarget = selected;
       if (selected.startsWith("approx:")) {
@@ -157,6 +202,22 @@ export function renderInputPanel(
         const preset = EXACT_PRESETS.find((p) => p.id === id);
         if (!preset) return;
         const req: ExactRequest = { kind: "exact", ratio: preset.ratio, constraints };
+        onChange(req, state);
+        return;
+      }
+
+      if (selected === "custom-ratio") {
+        const num = parsePositiveInt(ratioNum.value, "Ratio numerator");
+        const den = parsePositiveInt(ratioDen.value, "Ratio denominator");
+        const req: ExactRequest = { kind: "exact", ratio: Rational.from(num, den), constraints };
+        onChange(req, state);
+        return;
+      }
+
+      if (selected === "going-train") {
+        const bph = parsePositiveInt(beatRate.value.trim(), "Beat rate");
+        const teeth = parsePositiveInt(escapeTeeth.value, "Escape-wheel teeth");
+        const req: ExactRequest = { kind: "exact", ratio: goingTrainTarget(bph, teeth), constraints };
         onChange(req, state);
         return;
       }

@@ -29,6 +29,19 @@ describe("url state", () => {
     });
   });
 
+  it("round-trips the custom-ratio and going-train targets", () => {
+    const ratio: PanelState = {
+      target: "custom-ratio", num: "235", den: "19",
+      driver: "1", mult: "1", wheels: "4", gearMin: "6", gearMax: "120",
+    };
+    expect(decodeState(encodeState(ratio))).toEqual(ratio);
+    const going: PanelState = {
+      target: "going-train", bph: "18000", escape: "15",
+      driver: "1", mult: "1", wheels: "4", gearMin: "6", gearMax: "120",
+    };
+    expect(decodeState(encodeState(going))).toEqual(going);
+  });
+
   it("returns an empty object for an empty or absent fragment", () => {
     expect(decodeState("")).toEqual({});
     expect(decodeState("#")).toEqual({});
