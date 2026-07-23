@@ -23,6 +23,26 @@ describe("schematic", () => {
     const svg = schematicSvg({ stages: [{ driverTeeth: 6, drivenTeeth: 45 }] });
     expect(svg).toContain("output: opposite sense to driver");
   });
+  it("scales radii with teeth, stakes shared arbors concentrically, meshes tangent", () => {
+    const svg = schematicSvg({ stages: [
+      { driverTeeth: 8, drivenTeeth: 59 },
+      { driverTeeth: 7, drivenTeeth: 63 },
+    ] });
+    const gears = [...svg.matchAll(
+      /<circle class="gear-node[^"]*" cx="([\d.]+)" cy="[\d.]+" r="([\d.]+)" \/>\s*<text class="tooth-label"[^>]*>(\d+)<\/text>/g,
+    )].map((m) => ({ cx: Number(m[1]), r: Number(m[2]), teeth: Number(m[3]) }));
+    expect(gears.length).toBe(4);
+    const byTeeth = (t: number) => gears.find((g) => g.teeth === t)!;
+    // radius carries tooth information
+    expect(byTeeth(63).r).toBeGreaterThan(byTeeth(8).r);
+    expect(byTeeth(59).r).toBeGreaterThan(byTeeth(7).r);
+    // arbor 1 carries the 59-tooth wheel and the 7-leaf pinion on one centre
+    expect(byTeeth(59).cx).toBe(byTeeth(7).cx);
+    // pitch circles touch: centre distance equals the sum of meshing radii
+    expect(byTeeth(59).cx - byTeeth(8).cx).toBeCloseTo(byTeeth(8).r + byTeeth(59).r, 6);
+    expect(byTeeth(63).cx - byTeeth(7).cx).toBeCloseTo(byTeeth(7).r + byTeeth(63).r, 6);
+  });
+
   it("marks idlers and counts them in the mesh parity", () => {
     const svg = schematicSvg({ stages: [
       { driverTeeth: 8, drivenTeeth: 59 },
