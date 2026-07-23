@@ -49,13 +49,20 @@ export function bestTrainForK(target: Rational, k: number, c: Constraints): Solu
     train.stages.every((s) => s.drivenTeeth / s.driverTeeth <= c.maxStageRatio
                            && s.driverTeeth / s.drivenTeeth <= c.maxStageRatio);
 
-  // Ranking: smallest relative error first. When the hunting-tooth bonus is on,
-  // break equal-error ties by preferring more coprime stages before fewer teeth;
-  // otherwise fewer teeth wins the tie directly. The bonus never trades away
-  // accuracy — it only reorders trains that already share the best error.
+  // Ranking: smallest error first, compared EXACTLY — |achieved - target| as a
+  // Rational, never the float errorRel, which rounds two distinct errors onto
+  // the same double (or one exact tie onto two doubles) often enough to hand
+  // the fewest-teeth tie-break to the wrong train. The float stays on the
+  // Solution for display only. When the hunting-tooth bonus is on, equal-error
+  // ties prefer more coprime stages before fewer teeth; otherwise fewer teeth
+  // wins the tie directly. The bonus never trades away accuracy.
+  function exactAbsErr(achieved: Rational): Rational {
+    return achieved.sub(target).abs();
+  }
   function isBetter(cand: Solution): boolean {
     if (!best) return true;
-    if (cand.errorRel !== best.errorRel) return cand.errorRel < best.errorRel;
+    const cmp = exactAbsErr(cand.achievedRatio).cmp(exactAbsErr(best.achievedRatio));
+    if (cmp !== 0) return cmp < 0;
     if (c.huntingToothBonus) {
       const cc = coprimeStages(cand.train), cb = coprimeStages(best.train);
       if (cc !== cb) return cc > cb;
@@ -94,8 +101,10 @@ export function bestTrainForK(target: Rational, k: number, c: Constraints): Solu
       const Pb = BigInt(Pn);
       if (Pb < Pmin || Pb > Pmax) return;
       // A P this far out cannot improve on the current best, and everything
-      // beyond is farther still, so stop scanning this direction.
-      if (best && Math.abs(Pn - tQ) / tQ > best.errorRel) return;
+      // beyond is farther still, so stop scanning this direction. The bound is
+      // a float, so give it a hair of slack and let the exact comparison in
+      // isBetter decide anything near the line.
+      if (best && Math.abs(Pn - tQ) / tQ > best.errorRel * (1 + 1e-12) + Number.EPSILON) return;
       let hit = false;
       for (const driven of factorAll(Pb, k, min, max)) {
         const train = buildBestTrain(factors, driven);

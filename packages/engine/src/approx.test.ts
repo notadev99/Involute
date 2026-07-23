@@ -45,6 +45,21 @@ describe("approx solver", () => {
   });
 });
 
+describe("exact tie-break ranking", () => {
+  // Float error comparisons hand the fewest-teeth tie-break to the wrong train
+  // on a few percent of targets; the ranking must go through exact Rationals.
+  it("17/14 at k=2 returns the 42-tooth exact train", () => {
+    const s = bestTrainForK(Rational.from(17, 14), 2, DEFAULT_CONSTRAINTS)!;
+    expect(trainRatio(s.train).equals(Rational.from(17, 14))).toBe(true);
+    expect(s.errorRel).toBe(0);
+    expect(s.totalTeeth).toBe(42);
+  });
+  it("397/28 at k=2 returns the 174-tooth train, not a heavier equal-error one", () => {
+    const s = bestTrainForK(Rational.from(397, 28), 2, DEFAULT_CONSTRAINTS)!;
+    expect(s.totalTeeth).toBe(174);
+  });
+});
+
 describe("driver-window pruning", () => {
   // Every sorted k-tuple over [min,max], smallest-first (mirrors enumQ's order).
   function tuples(min: number, max: number, k: number): number[][] {
@@ -64,7 +79,7 @@ describe("driver-window pruning", () => {
   // whose ideal driven product overshoots the range yields nothing at all.
   function bruteBest(target: ReturnType<typeof Rational.from>, k: number, c: typeof DEFAULT_CONSTRAINTS) {
     const PminN = c.gearMin ** k, PmaxN = c.gearMax ** k;
-    let best: { errorRel: number; totalTeeth: number } | null = null;
+    let best: { errExact: Rational; errorRel: number; totalTeeth: number } | null = null;
     for (const driver of tuples(c.gearMin, c.gearMax, k)) {
       const den = driver.reduce((a, b) => a * BigInt(b), 1n);
       const floorP = Math.floor(target.toNumber() * Number(den));
@@ -80,11 +95,12 @@ describe("driver-window pruning", () => {
         const P = Number(num);
         if (P <= floorP ? !downOpen : !upOpen) continue;
         const achieved = Rational.from(num, den);
+        const errExact = achieved.sub(target).abs();
         const errorRel = Math.abs(achieved.sub(target).toNumber() / target.toNumber());
         const teeth = driver.reduce((a, b) => a + b, 0) + driven.reduce((a, b) => a + b, 0);
-        if (!best || errorRel < best.errorRel ||
-            (errorRel === best.errorRel && teeth < best.totalTeeth)) {
-          best = { errorRel, totalTeeth: teeth };
+        const cmp = best === null ? -1 : errExact.cmp(best.errExact);
+        if (best === null || cmp < 0 || (cmp === 0 && teeth < best.totalTeeth)) {
+          best = { errExact, errorRel, totalTeeth: teeth };
         }
       }
     }
