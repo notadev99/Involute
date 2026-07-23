@@ -45,6 +45,74 @@ describe("approx solver", () => {
   });
 });
 
+describe("driver-window pruning", () => {
+  // Every sorted k-tuple over [min,max], smallest-first (mirrors enumQ's order).
+  function tuples(min: number, max: number, k: number): number[][] {
+    if (k === 0) return [[]];
+    const out: number[][] = [];
+    for (let f = min; f <= max; f++) {
+      for (const rest of tuples(f, max, k - 1)) out.push([f, ...rest]);
+    }
+    return out;
+  }
+  // Unpruned reference: try every driver/driven tuple pair, gate the sorted
+  // pairing, rank by the same (errorRel, totalTeeth) rule the solver uses.
+  // Error goes through the same Rational path so float artifacts match.
+  // Mirrors scan()'s window semantics: a driver product Q only contributes if
+  // floor(target*Q) sits in [Pmin-1, Pmax] — the outward walk starts there and
+  // stops the moment it is outside the achievable driven-product range, so a Q
+  // whose ideal driven product overshoots the range yields nothing at all.
+  function bruteBest(target: ReturnType<typeof Rational.from>, k: number, c: typeof DEFAULT_CONSTRAINTS) {
+    const PminN = c.gearMin ** k, PmaxN = c.gearMax ** k;
+    let best: { errorRel: number; totalTeeth: number } | null = null;
+    for (const driver of tuples(c.gearMin, c.gearMax, k)) {
+      const den = driver.reduce((a, b) => a * BigInt(b), 1n);
+      const floorP = Math.floor(target.toNumber() * Number(den));
+      const downOpen = floorP >= PminN && floorP <= PmaxN;
+      const upOpen = floorP + 1 >= PminN && floorP + 1 <= PmaxN;
+      if (!downOpen && !upOpen) continue;
+      for (const driven of tuples(c.gearMin, c.gearMax, k)) {
+        const gated = driver.every(
+          (d, i) => driven[i] / d <= c.maxStageRatio && d / driven[i] <= c.maxStageRatio,
+        );
+        if (!gated) continue;
+        const num = driven.reduce((a, b) => a * BigInt(b), 1n);
+        const P = Number(num);
+        if (P <= floorP ? !downOpen : !upOpen) continue;
+        const achieved = Rational.from(num, den);
+        const errorRel = Math.abs(achieved.sub(target).toNumber() / target.toNumber());
+        const teeth = driver.reduce((a, b) => a + b, 0) + driven.reduce((a, b) => a + b, 0);
+        if (!best || errorRel < best.errorRel ||
+            (errorRel === best.errorRel && teeth < best.totalTeeth)) {
+          best = { errorRel, totalTeeth: teeth };
+        }
+      }
+    }
+    return best;
+  }
+
+  it("agrees with the exhaustive reference on small boxes", () => {
+    const c = { ...DEFAULT_CONSTRAINTS, gearMin: 6, gearMax: 14 };
+    const targets = [
+      Rational.from(59061178n, 1000000n), // double-lunation period multiplier
+      Rational.from(1236827n, 100000n),   // lunations per tropical year
+      Rational.from(7n, 3n),              // exactly realisable
+      Rational.from(97n, 90n),            // near 1, awkward
+    ];
+    for (const target of targets) {
+      for (const k of [1, 2]) {
+        const got = bestTrainForK(target, k, c);
+        const ref = bruteBest(target, k, c);
+        expect(got === null).toBe(ref === null);
+        if (got && ref) {
+          expect(got.errorRel).toBe(ref.errorRel);
+          expect(got.totalTeeth).toBe(ref.totalTeeth);
+        }
+      }
+    }
+  });
+});
+
 describe("hunting-tooth ranking bonus", () => {
   it("counts coprime (driver/driven) stages", () => {
     const train = { stages: [

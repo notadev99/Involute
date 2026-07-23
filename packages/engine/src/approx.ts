@@ -114,6 +114,15 @@ export function bestTrainForK(target: Rational, k: number, c: Constraints): Solu
   }
 
   // Enumerate driver-side products Q as k in-range factors (sorted, no permutations).
+  // Subtrees are pruned by a reachability window: driven products only exist in
+  // [Pmin, Pmax], so a subtree can only beat the current best error eps if some
+  // completed Q puts target*Q inside [Pmin/(1+eps), Pmax/(1-eps)] (the exact
+  // bounds at which the nearest in-range P ties eps; a hair of margin keeps
+  // equal-error tiebreak candidates alive across float rounding). With factors
+  // non-decreasing, choosing f next bounds the completed product to
+  // [product*f^slots, product*f*max^(slots-1)] — and once the smallest
+  // reachable target*Q overshoots the window, no larger f can recover.
+  const PminN = Number(Pmin), PmaxN = Number(Pmax);
   function enumQ(slots: number, floor: number, factors: number[], product: bigint) {
     if (slots === 0) {
       const tQ = tNum * Number(product);
@@ -122,7 +131,15 @@ export function bestTrainForK(target: Rational, k: number, c: Constraints): Solu
       scan(factors, product, tQ, floorP + 1, 1); // nearest gate-passing P above target*Q
       return;
     }
+    const base = tNum * Number(product);
     for (let f = floor; f <= max; f++) {
+      if (best) {
+        const eps = best.errorRel * (1 + 1e-9) + Number.EPSILON;
+        const qLo = base * f ** slots;
+        const qHi = base * f * max ** (slots - 1);
+        if (qLo > (eps >= 1 ? Infinity : PmaxN / (1 - eps))) break;
+        if (qHi < PminN / (1 + eps)) continue;
+      }
       enumQ(slots - 1, f, [...factors, f], product * BigInt(f));
     }
   }
