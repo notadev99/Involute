@@ -26,7 +26,7 @@ body {
 }
 
 #app {
-  max-width: var(--measure);
+  max-width: 1120px;
   margin: 0 auto;
   padding: var(--space-8) var(--space-5) var(--space-10);
   display: flex;
@@ -81,26 +81,73 @@ thead th {
   font-weight: 600;
 }
 
-/* ---- Input panel ------------------------------------------------------- */
+/* ---- Intro band -------------------------------------------------------- */
+.masthead .intro {
+  margin: var(--space-3) 0 0;
+  max-width: 78ch;
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.masthead .intro strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ---- Input panel: two labelled groups ---------------------------------- */
+/* Groups sit side by side on wide screens and stack when the row gets tight,
+   so the panel uses the horizontal space instead of running down the page. */
 .input-panel {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: var(--space-4) var(--space-5);
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.field-group {
+  margin: 0;
   padding: var(--space-5);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   background: var(--panel);
 }
 
+.field-group > legend {
+  padding: 0 var(--space-2);
+  font-size: var(--text-md);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.field-group .group-note {
+  margin: 0 0 var(--space-4);
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+}
+
+.group-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--space-4) var(--space-5);
+}
+
 .input-panel .field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-1);
   min-width: 0;
 }
 
-.input-panel .target-field {
+.group-fields .target-field {
   grid-column: 1 / -1;
+}
+
+.input-panel .hint {
+  font-size: var(--text-2xs);
+  color: var(--ink-faint);
+  line-height: var(--leading-tight);
 }
 
 .input-panel input,
@@ -126,18 +173,25 @@ button:focus-visible {
   cursor: pointer;
 }
 
-.input-panel .custom-target[hidden] {
+/* Conditional target sub-fields toggle on the hidden attribute — the specific
+   selector must beat `.input-panel .field { display: flex }`, so cover every
+   hidden descendant, not just one group. */
+.input-panel [hidden] {
   display: none;
 }
 
 .input-panel .custom-target,
+.input-panel .custom-ratio-field,
+.input-panel .going-train-field,
 .input-panel .gear-range {
   flex-flow: row wrap;
   align-items: end;
   gap: var(--space-2) var(--space-3);
 }
 
-.input-panel .custom-target label {
+.input-panel .custom-target label,
+.input-panel .custom-ratio-field label,
+.input-panel .going-train-field label {
   flex-basis: 100%;
 }
 
@@ -168,11 +222,16 @@ button:focus-visible {
   overflow-x: auto; /* very wide trains scroll within the plate */
 }
 
+/* Size the diagram by height, not width: a 2-gear train and a 5-gear train
+   get the same gear scale instead of a short train stretching to fill the
+   plate. Wider trains cap at the plate width (and scale down); the plate
+   scrolls only if one is genuinely wider than the container. */
 .schematic {
   display: block;
-  width: 100%;
-  height: auto;
-  min-width: 320px;
+  height: 220px;
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 .schematic .plate-line {
@@ -233,7 +292,7 @@ button:focus-visible {
 
 .results thead th {
   text-align: left;
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3);
   border-bottom: 1px solid var(--hairline-strong);
   white-space: nowrap;
 }
@@ -246,7 +305,7 @@ button:focus-visible {
 }
 
 .results tbody td {
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3);
   border-bottom: 1px solid var(--hairline);
   vertical-align: baseline;
 }
@@ -266,8 +325,16 @@ button:focus-visible {
   white-space: nowrap;
 }
 
+/* Prose-ish columns wrap so the table fits the width; the train notation and
+   figures above stay on one line. */
 .results td.corr {
   color: var(--ink-soft);
+  min-width: 11ch;
+}
+
+.results td.corr,
+.results td.bench-cell {
+  white-space: normal;
 }
 
 .results .bench {
@@ -311,6 +378,33 @@ button:focus-visible {
   font-size: var(--text-sm);
 }
 
+/* Visible "best" marker on the recommended row — not colour-only. */
+.best-badge {
+  display: inline-block;
+  margin-right: var(--space-1);
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Plain-language reading guide under the table. */
+.results-legend {
+  margin: var(--space-3) 0 0;
+  max-width: 62ch;
+  color: var(--ink-soft);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+.schematic-caption {
+  margin: var(--space-2) 0 0;
+  color: var(--ink-soft);
+  font-size: var(--text-xs);
+  text-align: center;
+}
+
 /* ---- Export controls --------------------------------------------------- */
 .export-slot {
   display: flex;
@@ -350,10 +444,13 @@ button[data-export]:hover {
     gap: var(--space-4);
   }
 
-  /* Hide interactive controls; keep the chosen train, schematic, table. */
+  /* Hide interactive controls and onboarding copy; keep the chosen train,
+     schematic, table, and the what-was-solved summary. */
   .panel-slot,
   .input-panel,
-  .export-slot {
+  .export-slot,
+  .masthead .intro,
+  .results-legend {
     display: none !important;
   }
 

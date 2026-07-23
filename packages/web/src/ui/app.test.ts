@@ -19,6 +19,29 @@ describe("app", () => {
     history.replaceState(null, "", "#");
   });
 
+  it("teaches the cold visitor: intro, grouped controls, reading guide, share", () => {
+    const root = document.createElement("main");
+    mountApp(root);
+    // intro band frames the auto-solved example
+    expect(root.querySelector(".intro")!.textContent).toMatch(/live example/i);
+    // controls are grouped into two labelled fieldsets
+    const legends = [...root.querySelectorAll("fieldset.field-group > legend")].map((l) => l.textContent);
+    expect(legends).toEqual(["What to solve", "Constraints"]);
+    // the recommended row carries a visible "best" badge, not colour alone
+    const badge = root.querySelector('tr[data-best="true"] .best-badge')!;
+    expect(badge).not.toBeNull();
+    expect(badge.textContent).toBe("best");
+    // a plain-language reading guide sits under the table
+    expect(root.querySelector(".results-legend")!.textContent).toMatch(/each row is one gear train/i);
+    // the schematic is captioned once a result exists
+    expect(root.querySelector<HTMLElement>(".schematic-caption")!.hidden).toBe(false);
+    // a Copy link button shares the pre-solved permalink
+    const link = root.querySelector<HTMLButtonElement>('[data-export="link"]')!;
+    expect(link).not.toBeNull();
+    link.click(); // must not throw even where clipboard is unavailable
+    history.replaceState(null, "", "#");
+  });
+
   it("shows a readable notice for malformed input instead of throwing", () => {
     const root = document.createElement("main");
     mountApp(root);

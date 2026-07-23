@@ -17,18 +17,28 @@ function debounce<A extends unknown[]>(fn: (...args: A) => void, ms: number): (.
 }
 
 export function mountApp(root: HTMLElement): void {
-  root.innerHTML = `<header class="masthead"><h1>Involute</h1><p class="tagline">Gear trains for watchmakers, computed exactly</p></header>
+  root.innerHTML = `<header class="masthead">
+      <h1>Involute</h1>
+      <p class="tagline">Find the gear tooth counts for a watch complication, and see how accurate each train is.</p>
+      <p class="intro">Pick what the train should track — a moon phase, a calendar, world time — and Involute computes the tooth counts and how far each option drifts. <strong>The result below is a live example:</strong> a moon-phase train accurate to about a day in 122 years. Change the target to solve your own.</p>
+    </header>
     <section class="panel-slot"></section>
     <p class="solve-summary"></p>
     <p class="solve-status" role="status" hidden>Computing…</p>
     <section class="schematic-slot"></section>
+    <p class="schematic-caption" hidden>Gear train for the best row.</p>
     <section class="results-slot"></section>
-    <section class="export-slot"><button data-export="json">Copy JSON</button><button data-export="csv">Download CSV</button></section>`;
+    <section class="export-slot">
+      <button data-export="link">Copy link</button>
+      <button data-export="json">Copy JSON</button>
+      <button data-export="csv">Download CSV</button>
+    </section>`;
   let rows: ResultRow[] = [];
   let summary: SolveSummary | undefined;
   const resultsSlot = root.querySelector(".results-slot")!;
   const schematicSlot = root.querySelector(".schematic-slot")!;
   const status = root.querySelector<HTMLElement>(".solve-status")!;
+  const caption = root.querySelector<HTMLElement>(".schematic-caption")!;
   resultsSlot.setAttribute("aria-live", "polite");
   schematicSlot.setAttribute("tabindex", "0");
   schematicSlot.setAttribute("role", "region");
@@ -51,6 +61,7 @@ export function mountApp(root: HTMLElement): void {
       resultsSlot.replaceChildren(renderResultsTable(rows, approxMeta));
       const best = rows.reduce((b, r) => (r.solution.errorRel < b.solution.errorRel ? r : b), rows[0]);
       schematicSlot.innerHTML = best ? schematicSvg(best.solution.train) : "";
+      caption.hidden = !best;
     });
   };
   const showError = (message: string) => {
@@ -76,6 +87,14 @@ export function mountApp(root: HTMLElement): void {
   );
   panel.classList.add("input-panel");
   root.querySelector(".panel-slot")!.replaceChildren(panel);
+  // The URL already carries the full solve (permalink), so a shared link opens a pre-solved view.
+  const linkBtn = root.querySelector<HTMLButtonElement>('[data-export="link"]')!;
+  linkBtn.addEventListener("click", () => {
+    navigator.clipboard?.writeText(location.href);
+    const prev = linkBtn.textContent;
+    linkBtn.textContent = "Link copied";
+    setTimeout(() => { linkBtn.textContent = prev; }, 1500);
+  });
   root.querySelector('[data-export="json"]')!.addEventListener("click", () => navigator.clipboard?.writeText(toJson(rows, summary)));
   root.querySelector('[data-export="csv"]')!.addEventListener("click", () => {
     const blob = new Blob([toCsv(rows, summary)], { type: "text/csv" });

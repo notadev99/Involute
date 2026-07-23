@@ -15,12 +15,13 @@ export function renderResultsTable(
       ? formatInterval(r.correction.humanInterval, r.correction.direction, r.correction.beyondConstantPrecision)
       : "—";
     const bench = r.benchmark ? `<span class="bench">${r.benchmark}</span>` : "";
-    const bestMark = i === bestIdx ? `<span class="visually-hidden">best — </span>` : "";
+    // Visible, screen-reader-readable badge — the best row is no longer signalled by colour alone.
+    const bestBadge = i === bestIdx ? `<span class="best-badge">best</span> ` : "";
     const period = approxMeta && r.achievedPeriodDays != null
       ? r.achievedPeriodDays.toFixed(approxMeta.digits)
       : "—";
     return `<tr data-best="${i === bestIdx}">
-      <td class="num">${bestMark}${r.solution.wheels}</td>
+      <td class="num">${bestBadge}${r.solution.wheels}</td>
       <td class="teeth">${formatTeeth(r.solution.train)}</td>
       <td class="num period">${period}</td>
       <td class="num err">${formatError(r.solution.errorRel)}</td>
@@ -33,6 +34,7 @@ export function renderResultsTable(
   wrap.innerHTML = `<div class="table-scroll" tabindex="0" role="region" aria-label="Candidate gear trains"><table>
     <caption class="visually-hidden">Pareto frontier of candidate gear trains</caption>
     <thead><tr><th scope="col">Wheels</th><th scope="col">Teeth (driver:driven)</th><th scope="col">${periodHead}</th><th scope="col">Error</th><th scope="col">Total teeth</th><th scope="col">Correction</th><th scope="col">Benchmark</th></tr></thead>
-    <tbody>${body}</tbody></table></div>`;
+    <tbody>${body}</tbody></table></div>
+    <p class="results-legend">Each row is one gear train. Fewer wheels are simpler; lower error is more accurate. "Correction" is how often you would nudge the hand to keep it right.</p>`;
   return wrap;
 }

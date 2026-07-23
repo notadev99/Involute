@@ -18,67 +18,82 @@ export function renderInputPanel(
 ): HTMLElement {
   const root = document.createElement("div");
   root.innerHTML = `
-    <div class="field target-field">
-      <label for="preset-select">Target</label>
-      <select id="preset-select">
-        <optgroup label="Astronomical (approximate)">
-          ${APPROX_PRESETS.map((p) => `<option value="approx:${p.id}">${p.name}</option>`).join("")}
-        </optgroup>
-        <optgroup label="Mechanical (exact)">
-          ${EXACT_PRESETS.map((p) => `<option value="exact:${p.id}">${p.name}</option>`).join("")}
-        </optgroup>
-        <option value="custom">Custom period (approximate)…</option>
-        <option value="custom-ratio">Custom ratio (exact)…</option>
-        <option value="going-train">Going train (beat rate)…</option>
-      </select>
-      <p class="target-note" hidden></p>
-    </div>
-    <div class="field custom-target" hidden>
-      <label for="custom-period">Period (days)</label>
-      <input id="custom-period" type="text" value="29.530589" />
-      <label for="custom-precision">Precision (digits)</label>
-      <input id="custom-precision" type="number" min="1" max="15" value="${FIELD_PRECISION_DIGITS}" />
-    </div>
-    <div class="field custom-ratio-field" hidden>
-      <label for="ratio-num">Target ratio</label>
-      <input id="ratio-num" type="number" min="1" step="1" value="12" />
-      <span class="range-sep">:</span>
-      <input id="ratio-den" type="number" min="1" step="1" value="1" aria-label="Target ratio denominator" />
-    </div>
-    <div class="field going-train-field" hidden>
-      <label for="beat-rate">Beat rate (bph)</label>
-      <input id="beat-rate" list="bph-rates" inputmode="numeric" value="18000" />
-      <datalist id="bph-rates">
-        <option value="18000"></option><option value="21600"></option><option value="25200"></option>
-        <option value="28800"></option><option value="36000"></option>
-      </datalist>
-      <label for="escape-teeth">Escape-wheel teeth</label>
-      <input id="escape-teeth" type="number" min="1" step="1" value="15" />
-    </div>
-    <div class="field">
-      <label for="driver-period">Driver period (days)</label>
-      <input id="driver-period" type="text" value="1" />
-    </div>
-    <div class="field">
-      <label for="multiplicity">Periods per display revolution</label>
-      <input id="multiplicity" type="number" min="1" value="2" />
-      <span class="hint">2 = double-moon disc</span>
-    </div>
-    <div class="field">
-      <label for="max-wheels">Max wheels</label>
-      <input id="max-wheels" type="number" min="1" value="${DEFAULT_CONSTRAINTS.maxWheels}" />
-    </div>
-    <div class="field gear-range">
-      <label for="gear-min">Gear range</label>
-      <input id="gear-min" type="number" min="6" value="${DEFAULT_CONSTRAINTS.gearMin}" />
-      <span class="range-sep">–</span>
-      <input id="gear-max" type="number" min="6" value="${DEFAULT_CONSTRAINTS.gearMax}" aria-label="Gear range maximum" />
-    </div>
-    <div class="field">
-      <label for="pinion-min">Pinion leaf minimum</label>
-      <input id="pinion-min" type="number" min="6" placeholder="off" />
-      <span class="hint">floor for each stage's smaller gear</span>
-    </div>
+    <fieldset class="field-group">
+      <legend>What to solve</legend>
+      <p class="group-note">what the gear train should track.</p>
+      <div class="group-fields">
+      <div class="field target-field">
+        <label for="preset-select">Target</label>
+        <select id="preset-select">
+          <optgroup label="Astronomical (approximate)">
+            ${APPROX_PRESETS.map((p) => `<option value="approx:${p.id}">${p.name}</option>`).join("")}
+          </optgroup>
+          <optgroup label="Mechanical (exact)">
+            ${EXACT_PRESETS.map((p) => `<option value="exact:${p.id}">${p.name}</option>`).join("")}
+          </optgroup>
+          <option value="custom">Custom period (approximate)…</option>
+          <option value="custom-ratio">Custom ratio (exact)…</option>
+          <option value="going-train">Going train (beat rate)…</option>
+        </select>
+        <p class="target-note" hidden></p>
+      </div>
+      <div class="field custom-target" hidden>
+        <label for="custom-period">Period (days)</label>
+        <input id="custom-period" type="text" value="29.530589" />
+        <label for="custom-precision">Precision (digits)</label>
+        <input id="custom-precision" type="number" min="1" max="15" value="${FIELD_PRECISION_DIGITS}" />
+      </div>
+      <div class="field custom-ratio-field" hidden>
+        <label for="ratio-num">Target ratio</label>
+        <input id="ratio-num" type="number" min="1" step="1" value="12" />
+        <span class="range-sep">:</span>
+        <input id="ratio-den" type="number" min="1" step="1" value="1" aria-label="Target ratio denominator" />
+      </div>
+      <div class="field going-train-field" hidden>
+        <label for="beat-rate">Beat rate (bph)</label>
+        <input id="beat-rate" list="bph-rates" inputmode="numeric" value="18000" />
+        <datalist id="bph-rates">
+          <option value="18000"></option><option value="21600"></option><option value="25200"></option>
+          <option value="28800"></option><option value="36000"></option>
+        </datalist>
+        <label for="escape-teeth">Escape-wheel teeth</label>
+        <input id="escape-teeth" type="number" min="1" step="1" value="15" />
+      </div>
+      <div class="field">
+        <label for="driver-period">Driver period (days)</label>
+        <input id="driver-period" type="text" value="1" />
+        <span class="hint">how often the input wheel turns; 1 = once a day</span>
+      </div>
+      <div class="field">
+        <label for="multiplicity">Periods / revolution</label>
+        <input id="multiplicity" type="number" min="1" value="2" />
+        <span class="hint">periods the display spans per turn; 2 = double-moon disc</span>
+      </div>
+      </div>
+    </fieldset>
+    <fieldset class="field-group">
+      <legend>Constraints</legend>
+      <p class="group-note">limits on the gears the solver may use.</p>
+      <div class="group-fields">
+      <div class="field">
+        <label for="max-wheels">Max wheels</label>
+        <input id="max-wheels" type="number" min="1" value="${DEFAULT_CONSTRAINTS.maxWheels}" />
+        <span class="hint">more wheels can be more accurate but more complex</span>
+      </div>
+      <div class="field gear-range">
+        <label for="gear-min">Gear range</label>
+        <input id="gear-min" type="number" min="6" value="${DEFAULT_CONSTRAINTS.gearMin}" />
+        <span class="range-sep">–</span>
+        <input id="gear-max" type="number" min="6" value="${DEFAULT_CONSTRAINTS.gearMax}" aria-label="Gear range maximum" />
+        <span class="hint">smallest and largest tooth count allowed</span>
+      </div>
+      <div class="field">
+        <label for="pinion-min">Pinion leaf minimum</label>
+        <input id="pinion-min" type="number" min="6" placeholder="off" />
+        <span class="hint">floor for each stage's smaller gear</span>
+      </div>
+      </div>
+    </fieldset>
   `;
 
   const presetSelect = root.querySelector<HTMLSelectElement>("#preset-select")!;

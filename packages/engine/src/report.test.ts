@@ -37,7 +37,7 @@ describe("correction reporting", () => {
   it("does not hide errors larger than the absolute uncertainty", () => {
     // 3.1e-4 d absolute error vs 1e-6 d uncertainty: 310x the stated precision,
     // so a finite interval must be quoted (~1 day per ~3200 years), not
-    // "within the precision of the modelled constant".
+    // "beyond the precision of the published value".
     const c = correction(365.2425, 365.24219, 1e-6, "day", 1);
     expect(c.beyondConstantPrecision).toBe(false);
     expect(Number.isFinite(c.unitsPerFullError)).toBe(true);
