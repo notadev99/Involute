@@ -14,7 +14,7 @@ export function correction(
   // absolute error, not the relative one, or a target known to 1e-6 days
   // would absorb errors ~1e-6 * period instead.
   if (Math.abs(errPerUnit) < uncertainty || errPerUnit === 0) {
-    return { unitsPerFullError: Infinity, humanInterval: "within the precision of the modelled constant",
+    return { unitsPerFullError: Infinity, humanInterval: "beyond the precision of the published value",
              direction: errPerUnit === 0 ? "exact" : (errPerUnit < 0 ? "fast" : "slow"),
              beyondConstantPrecision: Math.abs(errPerUnit) < uncertainty };
   }

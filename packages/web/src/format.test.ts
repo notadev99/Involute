@@ -12,10 +12,10 @@ describe("format", () => {
   });
   it("formats a correction interval with direction", () => {
     expect(formatInterval("about 1 day every ~2.7 years", "fast")).toContain("runs fast");
-    expect(formatInterval("within the precision of the modelled constant", "exact")).toBe("no correction needed");
+    expect(formatInterval("beyond the precision of the published value", "exact")).toBe("no correction needed");
     // below the constant's precision, no direction claim is printed
     expect(
-      formatInterval("within the precision of the modelled constant", "fast", true),
-    ).toBe("within the precision of the modelled constant");
+      formatInterval("beyond the precision of the published value", "fast", true),
+    ).toBe("beyond the precision of the published value");
   });
 });

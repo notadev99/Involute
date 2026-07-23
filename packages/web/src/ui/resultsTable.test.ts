@@ -14,8 +14,15 @@ describe("results table", () => {
     const el = renderResultsTable(rows);
     const best = el.querySelectorAll('[data-best="true"]');
     expect(best.length).toBe(1);
+    // the best row (k=2, lower error) carries a visible badge
+    expect(best[0].querySelector(".best-badge")!.textContent).toBe("best");
     expect(el.textContent).toContain("classic 59-tooth train");
     expect(el.querySelectorAll("tbody tr").length).toBe(2);
+  });
+
+  it("includes a plain-language reading guide", () => {
+    const el = renderResultsTable(rows);
+    expect(el.querySelector(".results-legend")!.textContent).toMatch(/lower error is more accurate/i);
   });
 });
 

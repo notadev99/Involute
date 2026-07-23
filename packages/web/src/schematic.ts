@@ -29,7 +29,19 @@ export function schematicSvg(train: GearTrain): string {
   const rMaxAll = Math.max(...train.stages.flatMap((s) => [radius(s.driverTeeth), radius(s.drivenTeeth)]));
   const cy = PAD + rMaxAll;
   const height = cy + rMaxAll + 24;
-  const width = xs[xs.length - 1] + Math.max(...arborGears[k].map((g) => radius(g.teeth))) + PAD;
+  const naturalWidth = xs[xs.length - 1] + Math.max(...arborGears[k].map((g) => radius(g.teeth))) + PAD;
+
+  // Mesh parity only fixes the output's sense RELATIVE to the driver — no
+  // absolute driver direction exists anywhere in the model, so an absolute
+  // CW/CCW tag would be an unverifiable claim.
+  const dir = outputParity(train) === 1 ? "same sense as driver" : "opposite sense to driver";
+  const dirLabel = `output: ${dir}`;
+  // A short train's natural width is narrower than the direction label, which
+  // would clip when anchored at the right edge — so widen the viewBox to fit
+  // the label and centre the gear cluster inside it. (~7.2 px per char at the
+  // 10px uppercase, letter-spaced dir-tag.)
+  const width = Math.max(naturalWidth, dirLabel.length * 7.2 + PAD * 2);
+  const dx = (width - naturalWidth) / 2;
 
   const nodes = arborGears.map((gearsOnArbor, i) => {
     // draw the larger gear first so a concentric pinion sits on top of it
@@ -40,18 +52,14 @@ export function schematicSvg(train: GearTrain): string {
       // companion labels just inside its own rim so the two never collide
       const labelY = sorted.length > 1 && j === 0 ? cy - r + 14 : cy + 4;
       return `
-    <circle class="gear-node${g.idler ? " idler" : ""}" cx="${xs[i]}" cy="${cy}" r="${r}" />
-    <text class="tooth-label" x="${xs[i]}" y="${labelY}" text-anchor="middle">${g.teeth}</text>
-    ${g.idler ? `<text class="idler-tag" x="${xs[i]}" y="${cy + rMaxAll + 14}" text-anchor="middle">idler</text>` : ""}`;
+    <circle class="gear-node${g.idler ? " idler" : ""}" cx="${xs[i] + dx}" cy="${cy}" r="${r}" />
+    <text class="tooth-label" x="${xs[i] + dx}" y="${labelY}" text-anchor="middle">${g.teeth}</text>
+    ${g.idler ? `<text class="idler-tag" x="${xs[i] + dx}" y="${cy + rMaxAll + 14}" text-anchor="middle">idler</text>` : ""}`;
     }).join("");
   }).join("");
 
-  const baseline = `<line class="plate-line" x1="${PAD}" y1="${cy}" x2="${width - PAD}" y2="${cy}" />`;
-  // Mesh parity only fixes the output's sense RELATIVE to the driver — no
-  // absolute driver direction exists anywhere in the model, so an absolute
-  // CW/CCW tag would be an unverifiable claim.
-  const dir = outputParity(train) === 1 ? "same sense as driver" : "opposite sense to driver";
-  const dirTag = `<text class="dir-tag" x="${width - PAD}" y="${Math.max(14, cy - rMaxAll - 8)}" text-anchor="end">output: ${dir}</text>`;
+  const baseline = `<line class="plate-line" x1="${PAD + dx}" y1="${cy}" x2="${naturalWidth - PAD + dx}" y2="${cy}" />`;
+  const dirTag = `<text class="dir-tag" x="${width - PAD}" y="${Math.max(14, cy - rMaxAll - 8)}" text-anchor="end">${dirLabel}</text>`;
   // Describe the train for assistive tech — role="img" makes the child <text>
   // presentational, so everything a sighted user reads must be in the label.
   const stageWords = train.stages
