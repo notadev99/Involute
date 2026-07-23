@@ -1,0 +1,396 @@
+/* Application styles; design tokens live in tokens.css. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--paper);
+  /* Faint blueprint grid — 24px cells, kept below legibility threshold. */
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  overflow-x: hidden; /* the page body never scrolls sideways */
+}
+
+#app {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-5) var(--space-10);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Every numeric figure is tabular monospace. */
+.num,
+.err,
+.teeth,
+.corr,
+.tooth-label,
+.dir-tag,
+input[type="number"],
+input[type="text"],
+select {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* ---- Masthead ---------------------------------------------------------- */
+.masthead {
+  border-bottom: 1px solid var(--hairline-strong);
+  padding-bottom: var(--space-4);
+}
+
+.masthead h1 {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: var(--leading-tight);
+}
+
+.masthead .tagline {
+  margin: var(--space-2) 0 0;
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+}
+
+/* Shared section-label treatment for form labels and table headers. */
+.input-panel label,
+thead th {
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+/* ---- Input panel ------------------------------------------------------- */
+.input-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--space-4) var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+
+.input-panel .field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.input-panel .target-field {
+  grid-column: 1 / -1;
+}
+
+.input-panel input,
+.input-panel select {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  appearance: none;
+}
+
+.input-panel input:focus-visible,
+.input-panel select:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.input-panel select {
+  cursor: pointer;
+}
+
+.input-panel .custom-target[hidden] {
+  display: none;
+}
+
+.input-panel .custom-target,
+.input-panel .gear-range {
+  flex-flow: row wrap;
+  align-items: end;
+  gap: var(--space-2) var(--space-3);
+}
+
+.input-panel .custom-target label {
+  flex-basis: 100%;
+}
+
+.input-panel .gear-range {
+  align-items: center;
+}
+
+.input-panel .gear-range label {
+  flex-basis: 100%;
+}
+
+.input-panel .gear-range input {
+  flex: 1;
+  min-width: 4rem;
+}
+
+.input-panel .range-sep {
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+}
+
+/* ---- Schematic (movement-plate diagram) -------------------------------- */
+.schematic-slot:not(:empty) {
+  padding: var(--space-5);
+  border: 1px solid var(--plate-edge);
+  border-radius: var(--radius);
+  background: var(--panel);
+  overflow-x: auto; /* very wide trains scroll within the plate */
+}
+
+.schematic {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-width: 320px;
+}
+
+.schematic .plate-line {
+  stroke: var(--hairline-strong);
+  stroke-width: 1;
+}
+
+.schematic .gear-node {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: 1.25;
+}
+
+.schematic .gear-node.idler {
+  stroke: var(--ink-faint);
+  stroke-dasharray: 3 3;
+}
+
+.schematic .tooth-label {
+  fill: var(--ink);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.schematic .idler-tag {
+  fill: var(--ink-faint);
+  font-size: 9px;
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.schematic .dir-tag {
+  fill: var(--accent);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* ---- Results table ----------------------------------------------------- */
+.results {
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+
+.table-scroll {
+  overflow-x: auto; /* wide table scrolls; body stays put */
+}
+
+.results table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.results thead th {
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--hairline-strong);
+  white-space: nowrap;
+}
+
+/* Numeric headers right-align to sit over their figures. */
+.results thead th:nth-child(1),
+.results thead th:nth-child(3),
+.results thead th:nth-child(4) {
+  text-align: right;
+}
+
+.results tbody td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+  vertical-align: baseline;
+}
+
+.results tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.results td.num,
+.results td.err {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.results td.teeth {
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.results td.corr {
+  color: var(--ink-soft);
+}
+
+.results .bench {
+  display: inline-block;
+  font-size: var(--text-2xs);
+  color: var(--ink-soft);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 1px var(--space-2);
+}
+
+/* Best row: the table's one accent. */
+.results tbody tr[data-best="true"] {
+  background: var(--accent-soft);
+}
+
+.results tbody tr[data-best="true"] td:first-child {
+  position: relative;
+}
+
+.results tbody tr[data-best="true"] td:first-child::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent);
+}
+
+.results tbody tr[data-best="true"] .err {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.results .empty {
+  margin: 0;
+  padding: var(--space-6);
+  color: var(--ink-soft);
+  text-align: center;
+  font-size: var(--text-sm);
+}
+
+/* ---- Export controls --------------------------------------------------- */
+.export-slot {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+button[data-export] {
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+button[data-export]:hover {
+  border-color: var(--accent-line);
+  color: var(--accent);
+}
+
+/* ---- Print: clean single-train spec sheet ------------------------------ */
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  #app {
+    max-width: none;
+    padding: 0;
+    gap: var(--space-4);
+  }
+
+  /* Hide interactive controls; keep the chosen train, schematic, table. */
+  .panel-slot,
+  .input-panel,
+  .export-slot {
+    display: none !important;
+  }
+
+  .masthead {
+    border-color: #000;
+  }
+
+  .schematic-slot:not(:empty),
+  .results {
+    border-color: #999;
+    background: #fff;
+    break-inside: avoid;
+  }
+
+  .schematic .gear-node {
+    stroke: #000;
+  }
+
+  .schematic .tooth-label {
+    fill: #000;
+  }
+
+  .schematic .dir-tag {
+    fill: #000;
+  }
+
+  /* On paper, mark the best row with a rule rather than a fill. */
+  .results tbody tr[data-best="true"] {
+    background: transparent;
+  }
+
+  .results tbody tr[data-best="true"] .err {
+    color: #000;
+  }
+
+  /* Emphasise the chosen (best) train; de-emphasise the rest. */
+  .results tbody tr:not([data-best="true"]) {
+    color: #666;
+  }
+}

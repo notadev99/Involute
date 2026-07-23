@@ -1,0 +1,77 @@
+/* Design tokens: palette, type scale, fonts, spacing.
+   Light is default; dark via prefers-color-scheme. */
+
+:root {
+  /* Font stacks. No web fonts are loaded — the deployed site makes no
+     network calls — so both stacks resolve to installed system faces.
+     Mono carries every numeric figure; grotesk carries prose. */
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, "JetBrains Mono",
+    "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica,
+    Arial, sans-serif;
+
+  /* Modular type scale (1.2 minor third), fluid at the extremes. */
+  --text-2xs: 0.72rem;
+  --text-xs: 0.8rem;
+  --text-sm: 0.9rem;
+  --text-base: 1rem;
+  --text-md: 1.12rem;
+  --text-lg: clamp(1.3rem, 1.1rem + 0.9vw, 1.6rem);
+  --text-xl: clamp(1.9rem, 1.5rem + 2vw, 2.7rem);
+
+  --leading-tight: 1.15;
+  --leading-normal: 1.55;
+  --tracking-label: 0.14em;
+
+  /* Spacing scale (4px base). */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-8: 3rem;
+  --space-10: 4.5rem;
+
+  --radius: 3px;
+  --measure: 880px;
+
+  /* Light palette — warm paper and ink, blueprint drawn in graphite. */
+  --paper: #f5f2ea;
+  --panel: #efeadd;
+  --ink: #1f1d18;
+  --ink-soft: #5b574c;
+  --ink-faint: #8c8779;
+  --hairline: rgba(31, 29, 24, 0.16);
+  --hairline-strong: rgba(31, 29, 24, 0.32);
+  --grid-line: rgba(31, 29, 24, 0.045);
+  --plate-edge: rgba(31, 29, 24, 0.22);
+
+  /* One accent: warm brass. Best-row marker and output-direction tag only. */
+  --accent: #9a6a1c;
+  --accent-soft: rgba(154, 106, 28, 0.12);
+  --accent-line: rgba(154, 106, 28, 0.55);
+
+  --focus: #305a7a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Ink-blue / graphite ground; brass warms slightly for contrast. */
+    --paper: #12161c;
+    --panel: #171c24;
+    --ink: #dce1e8;
+    --ink-soft: #98a2ad;
+    --ink-faint: #6a7480;
+    --hairline: rgba(220, 225, 232, 0.14);
+    --hairline-strong: rgba(220, 225, 232, 0.28);
+    --grid-line: rgba(220, 225, 232, 0.038);
+    --plate-edge: rgba(220, 225, 232, 0.2);
+
+    --accent: #d6a441;
+    --accent-soft: rgba(214, 164, 65, 0.14);
+    --accent-line: rgba(214, 164, 65, 0.6);
+
+    --focus: #6fa8cf;
+  }
+}
