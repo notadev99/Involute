@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseDecimal, validateApproxTarget, DEFAULT_CONSTRAINTS } from "./validate.js";
+import { parseDecimal, validateApproxTarget, validateConstraints, DEFAULT_CONSTRAINTS } from "./validate.js";
 import { Rational } from "./rational.js";
 
 describe("validation + parsing", () => {
@@ -21,5 +21,26 @@ describe("validation + parsing", () => {
   it("ships sane defaults", () => {
     expect(DEFAULT_CONSTRAINTS.gearMin).toBe(6);
     expect(DEFAULT_CONSTRAINTS.gearMax).toBe(120);
+  });
+});
+
+describe("parseDecimal rejects malformed input", () => {
+  it.each(["29,5", "", "abc", "1.2.3", "1e5", "29."])('throws on "%s"', (bad) => {
+    expect(() => parseDecimal(bad, 6)).toThrow(/bad number/);
+  });
+});
+
+describe("validateConstraints", () => {
+  it("accepts the defaults", () => {
+    expect(() => validateConstraints(DEFAULT_CONSTRAINTS)).not.toThrow();
+  });
+  it("rejects gearMin below 6", () => {
+    expect(() => validateConstraints({ ...DEFAULT_CONSTRAINTS, gearMin: 5 })).toThrow(/gearMin/);
+  });
+  it("rejects an inverted gear range", () => {
+    expect(() => validateConstraints({ ...DEFAULT_CONSTRAINTS, gearMax: 5, gearMin: 6 })).toThrow(/gearMax/);
+  });
+  it("rejects zero wheels", () => {
+    expect(() => validateConstraints({ ...DEFAULT_CONSTRAINTS, maxWheels: 0 })).toThrow(/maxWheels/);
   });
 });

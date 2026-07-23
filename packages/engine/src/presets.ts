@@ -19,6 +19,10 @@ export interface ApproxPreset {
   unit: string;
   source: string;
   driverNote: string;
+  // How many target periods one display revolution spans — 2 for the classic
+  // double-moon disc, 1 for everything else. The UI seeds its multiplicity
+  // field from this when the preset is chosen.
+  defaultMultiplicity: number;
 }
 
 export interface ExactPreset {
@@ -32,29 +36,29 @@ export interface ExactPreset {
 export const APPROX_PRESETS: ApproxPreset[] = [
   { id: "synodic-month", name: "Synodic month (moon phase)", value: "29.530589", precisionDigits: 6,
     uncertainty: 1e-6, unit: "day", source: "Meeus, Astronomical Algorithms",
-    driverNote: "driven continuously at 1 rev/day (24 h driver, the default driver period)" },
+    driverNote: "driven continuously at 1 rev/day (24 h driver, the default driver period)", defaultMultiplicity: 2 },
   { id: "draconic-month", name: "Draconic month", value: "27.212221", precisionDigits: 6,
     uncertainty: 1e-6, unit: "day", source: "Meeus, Astronomical Algorithms",
-    driverNote: "driven continuously at 1 rev/day (24 h driver, the default driver period)" },
+    driverNote: "driven continuously at 1 rev/day (24 h driver, the default driver period)", defaultMultiplicity: 1 },
   { id: "anomalistic-month", name: "Anomalistic month", value: "27.554550", precisionDigits: 6,
     uncertainty: 1e-6, unit: "day", source: "Meeus, Astronomical Algorithms",
-    driverNote: "driven continuously at 1 rev/day (24 h driver, the default driver period)" },
+    driverNote: "driven continuously at 1 rev/day (24 h driver, the default driver period)", defaultMultiplicity: 1 },
   { id: "sidereal-month", name: "Sidereal month", value: "27.321662", precisionDigits: 6,
     uncertainty: 1e-6, unit: "day", source: "Meeus, Astronomical Algorithms",
-    driverNote: "driven continuously at 1 rev/day (24 h driver, the default driver period)" },
+    driverNote: "driven continuously at 1 rev/day (24 h driver, the default driver period)", defaultMultiplicity: 1 },
   { id: "tropical-year", name: "Tropical year", value: "365.242190", precisionDigits: 6,
     uncertainty: 1e-6, unit: "day", source: "IAU",
-    driverNote: "driven continuously at 1 rev/day (24 h driver, the default driver period)" },
+    driverNote: "driven continuously at 1 rev/day (24 h driver, the default driver period)", defaultMultiplicity: 1 },
   { id: "sidereal-year", name: "Sidereal year", value: "365.256363", precisionDigits: 6,
     uncertainty: 1e-6, unit: "day", source: "IAU",
-    driverNote: "driven continuously at 1 rev/day (24 h driver, the default driver period)" },
+    driverNote: "driven continuously at 1 rev/day (24 h driver, the default driver period)", defaultMultiplicity: 1 },
   { id: "mean-tide", name: "Mean semidiurnal tide (days)", value: "0.517525", precisionDigits: 6,
     uncertainty: 1e-6, unit: "day", source: "derived: half mean lunar day (24 h 50.5 min / 2)",
-    driverNote: "driven continuously at 1 rev/day (24 h driver, the default driver period)" },
+    driverNote: "driven continuously at 1 rev/day (24 h driver, the default driver period)", defaultMultiplicity: 1 },
   { id: "lunations-per-year", name: "Lunations per tropical year (Metonic/Saros target)",
     value: "12.368266", precisionDigits: 6, uncertainty: 1e-6, unit: "lunation/year",
     source: "derived: tropical/synodic",
-    driverNote: "driven continuously at 1 rev/day (24 h driver, the default driver period)" },
+    driverNote: "driven continuously at 1 rev/day (24 h driver, the default driver period)", defaultMultiplicity: 1 },
 ];
 
 export const EXACT_PRESETS: ExactPreset[] = [

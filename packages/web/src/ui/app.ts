@@ -38,11 +38,27 @@ export function mountApp(root: HTMLElement): void {
       schematicSlot.innerHTML = best ? schematicSvg(best.solution.train) : "";
     });
   };
+  const showError = (message: string) => {
+    status.hidden = true;
+    const notice = document.createElement("p");
+    notice.className = "input-error";
+    notice.setAttribute("role", "alert");
+    notice.textContent = message;
+    resultsSlot.replaceChildren(notice);
+    schematicSlot.innerHTML = "";
+  };
   // Workers solve off-thread; debouncing keystrokes keeps half-typed values
-  // from queueing heavy solves. The synchronous fallback stays undebounced —
-  // it renders in the same tick, which the tests (and no-Worker envs) rely on.
-  const onRequest = typeof Worker === "undefined" ? rerender : debounce(rerender, 150);
-  const panel = renderInputPanel(onRequest, decodeState(location.hash));
+  // from queueing heavy solves (and error notices from flashing mid-keystroke —
+  // both paths share one timer, so the last event wins). The synchronous
+  // fallback stays undebounced — it renders in the same tick, which the tests
+  // (and no-Worker envs) rely on.
+  const dispatch: (fn: () => void) => void =
+    typeof Worker === "undefined" ? (fn) => fn() : debounce((fn: () => void) => fn(), 150);
+  const panel = renderInputPanel(
+    (req, state) => dispatch(() => rerender(req, state)),
+    decodeState(location.hash),
+    (message) => dispatch(() => showError(message)),
+  );
   panel.classList.add("input-panel");
   root.querySelector(".panel-slot")!.replaceChildren(panel);
   root.querySelector('[data-export="json"]')!.addEventListener("click", () => navigator.clipboard?.writeText(toJson(rows)));
