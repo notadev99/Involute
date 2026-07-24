@@ -90,11 +90,6 @@ thead th {
   line-height: var(--leading-normal);
 }
 
-.masthead .intro strong {
-  color: var(--ink);
-  font-weight: 600;
-}
-
 /* ---- Input panel: two labelled groups ---------------------------------- */
 /* Groups sit side by side on wide screens and stack when the row gets tight,
    so the panel uses the horizontal space instead of running down the page. */
