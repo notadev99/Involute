@@ -20,7 +20,7 @@ export function mountApp(root: HTMLElement): void {
   root.innerHTML = `<header class="masthead">
       <h1>Involute</h1>
       <p class="tagline">Find the gear tooth counts for a watch complication, and see how accurate each train is.</p>
-      <p class="intro">Pick what the train should track — a moon phase, a calendar, world time — and Involute computes the tooth counts and how far each option drifts. <strong>The result below is a live example:</strong> a moon-phase train accurate to about a day in 122 years. Change the target to solve your own.</p>
+      <p class="intro">Pick a target — moon phase, calendar, world time. The result below is a live example; change it to solve your own.</p>
     </header>
     <section class="panel-slot"></section>
     <p class="solve-summary"></p>

@@ -43,6 +43,10 @@ export function schematicSvg(train: GearTrain): string {
   const width = Math.max(naturalWidth, dirLabel.length * 7.2 + PAD * 2);
   const dx = (width - naturalWidth) / 2;
 
+  // Presentation attributes (fill/stroke) mirror the .gear-node CSS as a
+  // fallback: CSS overrides them when it's loaded, but if it's stripped
+  // (e.g. Safari Reader view) the shapes still outline instead of
+  // defaulting to a solid black fill.
   const nodes = arborGears.map((gearsOnArbor, i) => {
     // draw the larger gear first so a concentric pinion sits on top of it
     const sorted = [...gearsOnArbor].sort((a, b) => radius(b.teeth) - radius(a.teeth));
@@ -51,15 +55,17 @@ export function schematicSvg(train: GearTrain): string {
       // a solo (or the smaller concentric) gear labels at centre; a larger
       // companion labels just inside its own rim so the two never collide
       const labelY = sorted.length > 1 && j === 0 ? cy - r + 14 : cy + 4;
+      const stroke = g.idler ? "#6e695c" : "#5b574c";
+      const dash = g.idler ? ` stroke-dasharray="3 3"` : "";
       return `
-    <circle class="gear-node${g.idler ? " idler" : ""}" cx="${xs[i] + dx}" cy="${cy}" r="${r}" />
-    <text class="tooth-label" x="${xs[i] + dx}" y="${labelY}" text-anchor="middle">${g.teeth}</text>
-    ${g.idler ? `<text class="idler-tag" x="${xs[i] + dx}" y="${cy + rMaxAll + 14}" text-anchor="middle">idler</text>` : ""}`;
+    <circle class="gear-node${g.idler ? " idler" : ""}" cx="${xs[i] + dx}" cy="${cy}" r="${r}" fill="none" stroke="${stroke}" stroke-width="1.25"${dash} />
+    <text class="tooth-label" x="${xs[i] + dx}" y="${labelY}" text-anchor="middle" fill="#1f1d18">${g.teeth}</text>
+    ${g.idler ? `<text class="idler-tag" x="${xs[i] + dx}" y="${cy + rMaxAll + 14}" text-anchor="middle" fill="#6e695c">idler</text>` : ""}`;
     }).join("");
   }).join("");
 
-  const baseline = `<line class="plate-line" x1="${PAD + dx}" y1="${cy}" x2="${naturalWidth - PAD + dx}" y2="${cy}" />`;
-  const dirTag = `<text class="dir-tag" x="${width - PAD}" y="${Math.max(14, cy - rMaxAll - 8)}" text-anchor="end">${dirLabel}</text>`;
+  const baseline = `<line class="plate-line" x1="${PAD + dx}" y1="${cy}" x2="${naturalWidth - PAD + dx}" y2="${cy}" stroke="#3f3b32" stroke-width="1" />`;
+  const dirTag = `<text class="dir-tag" x="${width - PAD}" y="${Math.max(14, cy - rMaxAll - 8)}" text-anchor="end" fill="#7d5516">${dirLabel}</text>`;
   // Describe the train for assistive tech — role="img" makes the child <text>
   // presentational, so everything a sighted user reads must be in the label.
   const stageWords = train.stages

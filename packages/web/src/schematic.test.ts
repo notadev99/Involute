@@ -29,7 +29,7 @@ describe("schematic", () => {
       { driverTeeth: 7, drivenTeeth: 63 },
     ] });
     const gears = [...svg.matchAll(
-      /<circle class="gear-node[^"]*" cx="([\d.]+)" cy="[\d.]+" r="([\d.]+)" \/>\s*<text class="tooth-label"[^>]*>(\d+)<\/text>/g,
+      /<circle class="gear-node[^"]*" cx="([\d.]+)" cy="[\d.]+" r="([\d.]+)"[^>]*\/>\s*<text class="tooth-label"[^>]*>(\d+)<\/text>/g,
     )].map((m) => ({ cx: Number(m[1]), r: Number(m[2]), teeth: Number(m[3]) }));
     expect(gears.length).toBe(4);
     const byTeeth = (t: number) => gears.find((g) => g.teeth === t)!;
@@ -50,5 +50,21 @@ describe("schematic", () => {
     ] });
     expect(svg).toContain("idler");
     expect(svg).toContain("output: same sense as driver");
+  });
+
+  it("carries fill/stroke as presentation attributes so shapes survive CSS being stripped (e.g. Safari Reader view)", () => {
+    const svg = schematicSvg({ stages: [
+      { driverTeeth: 8, drivenTeeth: 59 },
+      { driverTeeth: 20, drivenTeeth: 20, isIdler: true },
+    ] });
+    const circles = [...svg.matchAll(/<circle class="gear-node[^"]*"[^>]*>/g)];
+    expect(circles.length).toBeGreaterThan(0);
+    // every gear circle must declare fill="none" inline — without it, a
+    // stylesheet-less render (CSS stripped) falls back to a solid black fill
+    for (const circle of circles) {
+      expect(circle[0]).toMatch(/fill="none"/);
+      expect(circle[0]).toMatch(/stroke="#[0-9a-f]+"/);
+    }
+    expect(svg).toMatch(/<line class="plate-line"[^>]*stroke="#[0-9a-f]+"[^>]*\/>/);
   });
 });
