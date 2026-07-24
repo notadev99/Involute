@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { mountApp } from "./app.js";
 
 describe("app", () => {
@@ -39,6 +39,19 @@ describe("app", () => {
     const link = root.querySelector<HTMLButtonElement>('[data-export="link"]')!;
     expect(link).not.toBeNull();
     link.click(); // must not throw even where clipboard is unavailable
+    history.replaceState(null, "", "#");
+  });
+
+  it("offers a Print / PDF button that opens the browser print dialog", () => {
+    const root = document.createElement("main");
+    mountApp(root);
+    const print = root.querySelector<HTMLButtonElement>('[data-export="print"]')!;
+    expect(print).not.toBeNull();
+    expect(print.textContent).toBe("Print / PDF");
+    const spy = vi.spyOn(window, "print").mockImplementation(() => {});
+    print.click();
+    expect(spy).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
     history.replaceState(null, "", "#");
   });
 

@@ -32,6 +32,7 @@ export function mountApp(root: HTMLElement): void {
       <button data-export="link">Copy link</button>
       <button data-export="json">Copy JSON</button>
       <button data-export="csv">Download CSV</button>
+      <button data-export="print">Print / PDF</button>
     </section>`;
   let rows: ResultRow[] = [];
   let summary: SolveSummary | undefined;
@@ -100,6 +101,9 @@ export function mountApp(root: HTMLElement): void {
     const blob = new Blob([toCsv(rows, summary)], { type: "text/csv" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "involute-frontier.csv"; a.click();
   });
+  // The @media print stylesheet already reduces the page to a spec sheet
+  // (schematic + table + summary), so opening the browser dialog is all we need.
+  root.querySelector('[data-export="print"]')!.addEventListener("click", () => window.print());
   // initial solve with the panel's default request
   panel.dispatchEvent(new Event("change", { bubbles: true }));
 }
